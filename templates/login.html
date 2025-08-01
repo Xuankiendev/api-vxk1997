@@ -9,30 +9,48 @@
 <body>
     <div class="container">
         <h1>Login</h1>
-        <form class="auth-form" onsubmit="return login(event)">
+        <form class="auth-form" id="loginForm">
             <input type="email" id="email" placeholder="Email" required>
             <input type="password" id="password" placeholder="Password" required>
             <button type="submit" class="button">Login</button>
         </form>
         <p>Need an account? <a href="/signup">Sign Up</a></p>
-        <div id="apiKey"></div>
+        <div id="apiKey" class="message"></div>
+        <div id="error" class="error"></div>
     </div>
     <script>
-        async function login(e) {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: new URLSearchParams({
-                    'email': document.getElementById('email').value,
-                    'password': document.getElementById('password').value
-                })
-            });
-            const data = await response.json();
-            if (data.apiKey) {
-                document.getElementById('apiKey').innerHTML = `Your API Key: <code>${data.apiKey}</code>`;
+            const errorDiv = document.getElementById('error');
+            const apiKeyDiv = document.getElementById('apiKey');
+            
+            try {
+                const formData = new FormData();
+                formData.append('email', document.getElementById('email').value);
+                formData.append('password', document.getElementById('password').value);
+
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    apiKeyDiv.innerHTML = `Your API Key: <code>${data.apiKey}</code>`;
+                    apiKeyDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                } else {
+                    errorDiv.textContent = data.error;
+                    errorDiv.style.display = 'block';
+                    apiKeyDiv.style.display = 'none';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+                apiKeyDiv.style.display = 'none';
             }
-        }
+        });
     </script>
 </body>
 </html>
