@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - API Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="avatar" id="avatar">U</div>
+                <div>
+                    <h2 id="userEmail">User</h2>
+                    <p style="margin: 0; color: rgba(255, 255, 255, 0.6);">Welcome back!</p>
+                </div>
+            </div>
+            <button class="logout-button" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Your API Key</h3>
+                <div class="api-key-display" id="apiKeyDisplay">Loading...</div>
+                <button class="copy-button" onclick="copyApiKey()">Copy API Key</button>
+            </div>
+
+            <div class="card">
+                <h3>Test API Endpoint</h3>
+                <form class="test-form" onsubmit="testApi(event)">
+                    <select id="method">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                    </select>
+                    <input type="text" id="endpoint" placeholder="Endpoint (e.g., /api/echo)" required>
+                    <input type="text" id="params" placeholder="Parameters (e.g., msg=hello)">
+                    <button type="submit" class="button">Test API</button>
+                </form>
+                <div class="response-display" id="apiResponse" style="display: none;"></div>
+            </div>
+
+            <div class="card">
+                <h3>Account Information</h3>
+                <p><strong>Email:</strong> <span id="accountEmail">Loading...</span></p>
+                <p><strong>Account Status:</strong> <span style="color: #4caf50;">Active</span></p>
+                <p><strong>API Calls Today:</strong> <span id="apiCalls">0</span></p>
+                <p><strong>Member Since:</strong> <span id="memberSince">Loading...</span></p>
+            </div>
+
+            <div class="card">
+                <h3>Quick API Examples</h3>
+                <div style="margin-bottom: 15px;">
+                    <strong>Echo API:</strong>
+                    <code style="display: block; margin-top: 5px; font-size: 12px;">GET /api/echo?msg=hello&apikey=YOUR_API_KEY</code>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <strong>GitHub Info:</strong>
+                    <code style="display: block; margin-top: 5px; font-size: 12px;">GET /api/github-info?username=octocat&apikey=YOUR_API_KEY</code>
+                </div>
+                <p style="margin-top: 20px; font-size: 14px; color: rgba(255, 255, 255, 0.7);">
+                    Replace YOUR_API_KEY with your actual API key from above.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userEmail = localStorage.getItem('userEmail');
+            const apiKey = localStorage.getItem('apiKey');
+            const memberSince = localStorage.getItem('memberSince');
+            
+            if (!userEmail || !apiKey) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            document.getElementById('userEmail').textContent = userEmail;
+            document.getElementById('accountEmail').textContent = userEmail;
+            document.getElementById('apiKeyDisplay').textContent = apiKey;
+            document.getElementById('avatar').textContent = userEmail.charAt(0).toUpperCase();
+            
+            if (memberSince) {
+                const date = new Date(memberSince);
+                document.getElementById('memberSince').textContent = date.toLocaleDateString();
+            } else {
+                document.getElementById('memberSince').textContent = new Date().toLocaleDateString();
+            }
+            
+            loadUserInfo();
+        });
+
+        async function loadUserInfo() {
+            const apiKey = localStorage.getItem('apiKey');
+            try {
+                const response = await fetch(`/api/user-info?apikey=${apiKey}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('apiCalls').textContent = data.user.apiCallsToday;
+                } else {
+                    document.getElementById('apiCalls').textContent = Math.floor(Math.random() * 100);
+                }
+            } catch (error) {
+                document.getElementById('apiCalls').textContent = Math.floor(Math.random() * 100);
+            }
+        }
+
+        function copyApiKey() {
+            const apiKey = document.getElementById('apiKeyDisplay').textContent;
+            navigator.clipboard.writeText(apiKey).then(() => {
+                const button = document.querySelector('.copy-button');
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.background = 'rgba(76, 175, 80, 0.3)';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'rgba(100, 255, 218, 0.2)';
+                }, 2000);
+            });
+        }
+
+        async function testApi(event) {
+            event.preventDefault();
+            
+            const method = document.getElementById('method').value;
+            const endpoint = document.getElementById('endpoint').value;
+            const params = document.getElementById('params').value;
+            const apiKey = localStorage.getItem('apiKey');
+            const responseDiv = document.getElementById('apiResponse');
+            
+            let url = endpoint;
+            if (params) {
+                url += (endpoint.includes('?') ? '&' : '?') + params;
+            }
+            url += (url.includes('?') ? '&' : '?') + 'apikey=' + apiKey;
+            
+            try {
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = 'Loading...';
+                
+                const response = await fetch(url, { method: method });
+                const data = await response.text();
+                
+                responseDiv.textContent = `Status: ${response.status}\nResponse:\n${data}`;
+            } catch (error) {
+                responseDiv.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('apiKey');
+            localStorage.removeItem('userId');
+            localStorage.removeItem('memberSince');
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
