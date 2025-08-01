@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, Depends, Form, HTTPException
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse, RedirectResponse
 from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse
 from . import db, utils
 from .db import User
 
@@ -29,14 +29,7 @@ async def signup(email: str = Form(...), password: str = Form(...), db: Session 
         
         db.add(new_user)
         db.commit()
-        
-        return JSONResponse(
-            content={
-                "success": True,
-                "apiKey": apiKey,
-                "redirect": "/dashboard"
-            }
-        )
+        return JSONResponse(content={"success": True, "apiKey": apiKey})
         
     except Exception as e:
         db.rollback()
@@ -55,13 +48,7 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
                 content={"success": False, "error": "Invalid email or password"}
             )
         
-        return JSONResponse(
-            content={
-                "success": True,
-                "apiKey": user.apiKey,
-                "redirect": "/dashboard"
-            }
-        )
+        return JSONResponse(content={"success": True, "apiKey": user.apiKey})
         
     except Exception as e:
         return JSONResponse(
@@ -69,6 +56,8 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
             content={"success": False, "error": str(e)}
         )
 
-@router.get("/dashboard")
-async def dashboard(request: Request):
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+async def validateApiKey(apiKey: str, db: Session = Depends(db.getDb)):
+    user = db.query(User).filter(User.apiKey == apiKey).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return user
