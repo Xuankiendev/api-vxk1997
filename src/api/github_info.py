@@ -6,7 +6,7 @@ from ..db import getDb
 
 router = APIRouter(prefix="/api")
 
-@router.get("/github-info")
+@router.get("/github_info")
 async def getGithubInfo(username: str, apiKey: str, db: Session = Depends(getDb)):
     await validateApiKey(apiKey, db)
     
