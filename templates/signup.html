@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - API Platform</title>
+    <title>Create Account - API Platform</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
     <div class="container">
-        <h1>Sign Up</h1>
+        <h1>Create Account</h1>
         <form class="auth-form" id="signupForm">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit" class="button">Sign Up</button>
+            <input type="email" id="email" placeholder="Enter your email address" required>
+            <input type="password" id="password" placeholder="Create a secure password" required minlength="6">
+            <button type="submit" class="button">🚀 Create Account</button>
         </form>
-        <p>Already have an account? <a href="/login">Login</a></p>
+        <p>Already have an account? <a href="/login">Sign in here</a></p>
         <div id="apiKey" class="message"></div>
         <div id="error" class="error"></div>
     </div>
@@ -23,6 +24,11 @@
             e.preventDefault();
             const errorDiv = document.getElementById('error');
             const apiKeyDiv = document.getElementById('apiKey');
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            submitButton.textContent = '⏳ Creating account...';
+            submitButton.disabled = true;
             
             try {
                 const formData = new FormData();
@@ -37,7 +43,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    apiKeyDiv.innerHTML = `Registration successful! Redirecting to dashboard...`;
+                    apiKeyDiv.innerHTML = `✅ Account created successfully! Redirecting to dashboard...`;
                     apiKeyDiv.style.display = 'block';
                     errorDiv.style.display = 'none';
                     
@@ -50,15 +56,31 @@
                         window.location.href = '/dashboard';
                     }, 2000);
                 } else {
-                    errorDiv.textContent = data.error;
+                    errorDiv.textContent = `❌ ${data.error}`;
                     errorDiv.style.display = 'block';
                     apiKeyDiv.style.display = 'none';
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
                 }
             } catch (error) {
-                errorDiv.textContent = 'Server error';
+                errorDiv.textContent = '❌ Server error. Please try again.';
                 errorDiv.style.display = 'block';
                 apiKeyDiv.style.display = 'none';
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
             }
+        });
+
+        // Add loading animation
+        document.getElementById('email').addEventListener('input', function() {
+            this.style.borderColor = this.value ? 'var(--primary)' : 'var(--border)';
+        });
+
+        document.getElementById('password').addEventListener('input', function() {
+            const strength = this.value.length >= 8 ? 'strong' : this.value.length >= 6 ? 'medium' : 'weak';
+            this.style.borderColor = strength === 'strong' ? 'var(--success)' : 
+                                   strength === 'medium' ? 'var(--warning)' : 
+                                   this.value ? 'var(--error)' : 'var(--border)';
         });
     </script>
 </body>
