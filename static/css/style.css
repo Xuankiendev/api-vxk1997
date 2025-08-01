@@ -1,0 +1,10 @@
+* { margin:0; padding:0; box-sizing:border-box; font-family:system-ui, sans-serif; }
+body { background:#f5f7fa; color:#333; }
+header { background:#0066ff; color:#fff; padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; }
+header a { color:#fff; margin-left:1rem; text-decoration:none; }
+main, form { max-width:480px; margin:2rem auto; padding:0 1rem; }
+form { display:flex; flex-direction:column; gap:0.75rem; }
+input, button { padding:0.6rem 0.75rem; border:1px solid #ccc; border-radius:4px; font-size:1rem; }
+button { background:#0066ff; color:#fff; border:none; cursor:pointer; }
+button:hover { background:#004ece; }
+code { background:#e4e8f0; padding:2px 4px; border-radius:3px; }
