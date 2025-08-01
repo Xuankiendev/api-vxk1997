@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - API Platform</title>
+    <title>Sign In - API Platform</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
     <div class="container">
-        <h1>Login</h1>
+        <h1>Welcome Back</h1>
         <form class="auth-form" id="loginForm">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit" class="button">Login</button>
+            <input type="email" id="email" placeholder="Enter your email address" required>
+            <input type="password" id="password" placeholder="Enter your password" required>
+            <button type="submit" class="button">🔑 Sign In</button>
         </form>
-        <p>Need an account? <a href="/signup">Sign Up</a></p>
+        <p>Don't have an account? <a href="/signup">Create one now</a></p>
         <div id="apiKey" class="message"></div>
         <div id="error" class="error"></div>
     </div>
@@ -23,6 +24,11 @@
             e.preventDefault();
             const errorDiv = document.getElementById('error');
             const apiKeyDiv = document.getElementById('apiKey');
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            submitButton.textContent = '⏳ Signing in...';
+            submitButton.disabled = true;
             
             try {
                 const formData = new FormData();
@@ -37,7 +43,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    apiKeyDiv.innerHTML = `Login successful! Redirecting to dashboard...`;
+                    apiKeyDiv.innerHTML = `✅ Welcome back! Redirecting to dashboard...`;
                     apiKeyDiv.style.display = 'block';
                     errorDiv.style.display = 'none';
                     
@@ -48,17 +54,38 @@
                     
                     setTimeout(() => {
                         window.location.href = '/dashboard';
-                    }, 2000);
+                    }, 1500);
                 } else {
-                    errorDiv.textContent = data.error;
+                    errorDiv.textContent = `❌ ${data.error}`;
                     errorDiv.style.display = 'block';
                     apiKeyDiv.style.display = 'none';
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
                 }
             } catch (error) {
-                errorDiv.textContent = 'Server error';
+                errorDiv.textContent = '❌ Server error. Please try again.';
                 errorDiv.style.display = 'block';
                 apiKeyDiv.style.display = 'none';
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
             }
+        });
+
+        // Focus states
+        document.getElementById('email').addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        document.getElementById('email').addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+
+        document.getElementById('password').addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        document.getElementById('password').addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
         });
     </script>
 </body>
