@@ -3,6 +3,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from . import db, utils
+from .db import User
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -10,7 +11,7 @@ templates = Jinja2Templates(directory="templates")
 @router.post("/signup")
 async def signup(email: str = Form(...), password: str = Form(...), db: Session = Depends(db.getDb)):
     try:
-        existing_user = db.query(db.User).filter(db.User.email == email).first()
+        existing_user = db.query(User).filter(User.email == email).first()
         if existing_user:
             return JSONResponse(
                 status_code=400,
@@ -20,7 +21,7 @@ async def signup(email: str = Form(...), password: str = Form(...), db: Session 
         hashedPassword = utils.hashPassword(password)
         apiKey = utils.generateApiKey()
         
-        new_user = db.User(
+        new_user = User(
             email=email,
             password=hashedPassword,
             apiKey=apiKey
@@ -40,7 +41,7 @@ async def signup(email: str = Form(...), password: str = Form(...), db: Session 
 @router.post("/login")
 async def login(email: str = Form(...), password: str = Form(...), db: Session = Depends(db.getDb)):
     try:
-        user = db.query(db.User).filter(db.User.email == email).first()
+        user = db.query(User).filter(User.email == email).first()
         if not user or not utils.verifyPassword(password, user.password):
             return JSONResponse(
                 status_code=401,
@@ -56,7 +57,7 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
         )
 
 async def validateApiKey(apiKey: str, db: Session = Depends(db.getDb)):
-    user = db.query(db.User).filter(db.User.apiKey == apiKey).first()
+    user = db.query(User).filter(User.apiKey == apiKey).first()
     if not user:
         raise HTTPException(status_code=401, detail="Invalid API key")
     return user
