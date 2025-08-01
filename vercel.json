@@ -1,6 +1,4 @@
 {
-  "buildCommand": "pip install -r requirements.txt",
-  "outputDirectory": ".",
   "functions": {
     "src/main.py": {
       "runtime": "python@3.11"
