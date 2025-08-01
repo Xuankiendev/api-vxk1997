@@ -11,7 +11,6 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(auth.router)
 app.include_router(example.router)
 app.include_router(github_info.router)
-app.include_router(chat.router)
 
 @app.get("/")
 async def home(request: Request):
