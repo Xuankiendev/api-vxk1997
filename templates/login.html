@@ -5,24 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - API Platform</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .form-floating {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .form-floating input {
+            width: 100%;
+            height: 3.5rem;
+            padding: 1rem 0.75rem;
+        }
+
+        .form-floating label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 1rem 0.75rem;
+            pointer-events: none;
+            transform-origin: 0 0;
+            transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+            color: #6c757d;
+        }
+
+        .form-floating input:focus ~ label,
+        .form-floating input:not(:placeholder-shown) ~ label {
+            transform: scale(.85) translateY(-0.5rem);
+            background: white;
+            padding: 0 0.25rem;
+        }
+
+        .auth-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            margin: 2rem auto;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-form button {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .auth-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Login</h1>
-        <form class="auth-form" id="loginForm">
-            <input type="email" id="email" placeholder="Email" required>
-            <input type="password" id="password" placeholder="Password" required>
-            <button type="submit" class="button">Login</button>
-        </form>
-        <p>Need an account? <a href="/signup">Sign Up</a></p>
-        <div id="apiKey" class="message"></div>
-        <div id="error" class="error"></div>
+        <div class="auth-card">
+            <div class="card-header">
+                <h1>Login</h1>
+                <p>Welcome back! Please login to continue</p>
+            </div>
+            <form class="auth-form" id="loginForm">
+                <div class="form-floating">
+                    <input type="email" id="email" placeholder=" " required>
+                    <label for="email">Email address</label>
+                </div>
+                <div class="form-floating">
+                    <input type="password" id="password" placeholder=" " required>
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit" class="button">Login</button>
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Logging in...</p>
+                </div>
+            </form>
+            <div class="auth-links">
+                <p>Need an account? <a href="/signup">Sign Up</a></p>
+            </div>
+            <div id="error" class="error"></div>
+        </div>
     </div>
+
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const errorDiv = document.getElementById('error');
-            const apiKeyDiv = document.getElementById('apiKey');
+            const loadingDiv = document.getElementById('loading');
+            const submitButton = document.querySelector('button[type="submit"]');
+            
+            // Reset error message
+            errorDiv.style.display = 'none';
+            
+            // Show loading state
+            loadingDiv.style.display = 'block';
+            submitButton.disabled = true;
             
             try {
                 const formData = new FormData();
@@ -37,18 +154,19 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    apiKeyDiv.innerHTML = `Your API Key: <code>${data.apiKey}</code>`;
-                    apiKeyDiv.style.display = 'block';
-                    errorDiv.style.display = 'none';
+                    localStorage.setItem('apiKey', data.apiKey);
+                    window.location.href = data.redirect;
                 } else {
                     errorDiv.textContent = data.error;
                     errorDiv.style.display = 'block';
-                    apiKeyDiv.style.display = 'none';
                 }
             } catch (error) {
-                errorDiv.textContent = 'Server error';
+                errorDiv.textContent = 'An error occurred. Please try again.';
                 errorDiv.style.display = 'block';
-                apiKeyDiv.style.display = 'none';
+            } finally {
+                // Hide loading state
+                loadingDiv.style.display = 'none';
+                submitButton.disabled = false;
             }
         });
     </script>
