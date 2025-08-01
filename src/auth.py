@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Form, HTTPException
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
+from datetime import datetime
 from . import db, utils
 from .db import User
 
@@ -29,7 +30,17 @@ async def signup(email: str = Form(...), password: str = Form(...), db: Session 
         
         db.add(new_user)
         db.commit()
-        return JSONResponse(content={"success": True, "apiKey": apiKey})
+        db.refresh(new_user)
+        
+        return JSONResponse(content={
+            "success": True, 
+            "apiKey": apiKey,
+            "user": {
+                "email": email,
+                "id": new_user.id,
+                "createdAt": new_user.created_at.isoformat() if hasattr(new_user, 'created_at') else datetime.now().isoformat()
+            }
+        })
         
     except Exception as e:
         db.rollback()
@@ -48,7 +59,38 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
                 content={"success": False, "error": "Invalid email or password"}
             )
         
-        return JSONResponse(content={"success": True, "apiKey": user.apiKey})
+        return JSONResponse(content={
+            "success": True, 
+            "apiKey": user.apiKey,
+            "user": {
+                "email": user.email,
+                "id": user.id,
+                "createdAt": user.created_at.isoformat() if hasattr(user, 'created_at') else datetime.now().isoformat()
+            }
+        })
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+@router.get("/api/user-info")
+async def getUserInfo(apikey: str, db: Session = Depends(db.getDb)):
+    try:
+        user = db.query(User).filter(User.apiKey == apikey).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid API key")
+        
+        return JSONResponse(content={
+            "success": True,
+            "user": {
+                "email": user.email,
+                "id": user.id,
+                "apiKey": user.apiKey,
+                "createdAt": user.created_at.isoformat() if hasattr(user, 'created_at') else datetime.now().isoformat()
+            }
+        })
         
     except Exception as e:
         return JSONResponse(
