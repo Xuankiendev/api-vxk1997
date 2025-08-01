@@ -1,13 +1,11 @@
-from fastapi import APIRouter, Query, HTTPException
-from src.db import getConn
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from ..auth import validateApiKey
+from ..db import getDb
 
-router = APIRouter()
+router = APIRouter(prefix="/api")
 
 @router.get("/echo")
-def echo(msg: str = Query(...), apikey: str = Query(...)):
-    conn = getConn()
-    user = conn.execute("select 1 from users where apiKey = %s", [apikey]).fetchone()
-    conn.close()
-    if not user:
-        raise HTTPException(statusCode=401, detail="unauthorized")
+async def echo(msg: str, apiKey: str, db: Session = Depends(getDb)):
+    await validateApiKey(apiKey, db)
     return {"message": msg}
