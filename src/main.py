@@ -23,3 +23,7 @@ async def signupPage(request: Request):
 @app.get("/login")
 async def loginPage(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
+@app.get("/dashboard")
+async def dashboardPage(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
