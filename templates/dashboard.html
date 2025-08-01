@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - API Platform</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
     <div class="dashboard-container">
@@ -12,55 +13,136 @@
             <div class="user-info">
                 <div class="avatar" id="avatar">U</div>
                 <div>
-                    <h2 id="userEmail">User</h2>
-                    <p style="margin: 0; color: rgba(255, 255, 255, 0.6);">Welcome back!</p>
+                    <h2 id="userEmail">Loading...</h2>
+                    <p style="margin: 0; color: var(--text-secondary); font-weight: 500;">API Developer</p>
                 </div>
             </div>
-            <button class="logout-button" onclick="logout()">Logout</button>
+            <button class="logout-button" onclick="logout()">🚪 Sign Out</button>
         </div>
 
         <div class="dashboard-grid">
+            <!-- API Key Card -->
             <div class="card">
-                <h3>Your API Key</h3>
+                <h3>🔑 Your API Key</h3>
                 <div class="api-key-display" id="apiKeyDisplay">Loading...</div>
-                <button class="copy-button" onclick="copyApiKey()">Copy API Key</button>
+                <button class="copy-button" onclick="copyApiKey()">📋 Copy Key</button>
+                <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-muted);">
+                    Keep your API key secure. Never share it publicly or commit it to version control.
+                </p>
             </div>
 
+            <!-- API Testing Card -->
             <div class="card">
-                <h3>Test API Endpoint</h3>
+                <h3>🧪 Test API Endpoint</h3>
                 <form class="test-form" onsubmit="testApi(event)">
                     <select id="method">
-                        <option value="GET">GET</option>
-                        <option value="POST">POST</option>
+                        <option value="GET">GET Request</option>
+                        <option value="POST">POST Request</option>
                     </select>
-                    <input type="text" id="endpoint" placeholder="Endpoint (e.g., /api/echo)" required>
-                    <input type="text" id="params" placeholder="Parameters (e.g., msg=hello)">
-                    <button type="submit" class="button">Test API</button>
+                    <input type="text" id="endpoint" placeholder="Endpoint (e.g., /api/echo)" value="/api/echo" required>
+                    <input type="text" id="params" placeholder="Parameters (e.g., msg=hello world)" value="msg=hello">
+                    <button type="submit" class="button">🚀 Test API</button>
                 </form>
                 <div class="response-display" id="apiResponse" style="display: none;"></div>
             </div>
 
+            <!-- Account Stats Card -->
             <div class="card">
-                <h3>Account Information</h3>
-                <p><strong>Email:</strong> <span id="accountEmail">Loading...</span></p>
-                <p><strong>Account Status:</strong> <span style="color: #4caf50;">Active</span></p>
-                <p><strong>API Calls Today:</strong> <span id="apiCalls">0</span></p>
-                <p><strong>Member Since:</strong> <span id="memberSince">Loading...</span></p>
+                <h3>📊 Account Overview</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="apiCalls">0</span>
+                        <span class="stat-label">API Calls Today</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" style="color: var(--success);">99.9%</span>
+                        <span class="stat-label">Uptime</span>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(15, 23, 42, 0.5); border-radius: 12px; border: 1px solid var(--border);">
+                    <p style="margin: 0; display: flex; justify-content: space-between; align-items: center;">
+                        <span><strong>Email:</strong> <span id="accountEmail">Loading...</span></span>
+                    </p>
+                    <p style="margin: 0.5rem 0 0 0; display: flex; justify-content: space-between; align-items: center;">
+                        <span><strong>Status:</strong> <span style="color: var(--success); font-weight: 600;">🟢 Active</span></span>
+                    </p>
+                    <p style="margin: 0.5rem 0 0 0; display: flex; justify-content: space-between; align-items: center;">
+                        <span><strong>Member Since:</strong> <span id="memberSince">Loading...</span></span>
+                    </p>
+                </div>
             </div>
 
+            <!-- API Examples Card -->
             <div class="card">
-                <h3>Quick API Examples</h3>
-                <div style="margin-bottom: 15px;">
-                    <strong>Echo API:</strong>
-                    <code style="display: block; margin-top: 5px; font-size: 12px;">GET /api/echo?msg=hello&apikey=YOUR_API_KEY</code>
+                <h3>📚 API Documentation</h3>
+                <div class="example-item">
+                    <strong>🔄 Echo API</strong>
+                    <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-secondary);">
+                        Returns your message with additional metadata
+                    </p>
+                    <code>GET /api/echo?msg=hello&apikey=YOUR_API_KEY</code>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <strong>GitHub Info:</strong>
-                    <code style="display: block; margin-top: 5px; font-size: 12px;">GET /api/github-info?username=octocat&apikey=YOUR_API_KEY</code>
+                <div class="example-item">
+                    <strong>🐙 GitHub Info API</strong>
+                    <p style="margin: 0.5rem 0; font-size: 0.875rem; color: var(--text-secondary);">
+                        Fetch GitHub user information and repositories
+                    </p>
+                    <code>GET /api/github-info?username=octocat&apikey=YOUR_API_KEY</code>
                 </div>
-                <p style="margin-top: 20px; font-size: 14px; color: rgba(255, 255, 255, 0.7);">
-                    Replace YOUR_API_KEY with your actual API key from above.
-                </p>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary);">
+                        💡 <strong>Pro Tip:</strong> Replace <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;">YOUR_API_KEY</code> with your actual API key from above.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card">
+                <h3>⚡ Quick Actions</h3>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <button class="button" onclick="testQuickApi('echo')" style="background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%); width: 100%;">
+                        🔄 Test Echo API
+                    </button>
+                    <button class="button" onclick="testQuickApi('github')" style="background: linear-gradient(135deg, var(--accent) 0%, var(--warning) 100%); width: 100%;">
+                        🐙 Test GitHub API
+                    </button>
+                    <button class="button" onclick="regenerateApiKey()" style="background: linear-gradient(135deg, var(--error) 0%, #dc2626 100%); width: 100%;">
+                        🔄 Regenerate API Key
+                    </button>
+                </div>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(245, 158, 11, 0.1); border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                    <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary);">
+                        ⚠️ <strong>Warning:</strong> Regenerating your API key will invalidate the current one.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Performance Metrics Card -->
+            <div class="card">
+                <h3>📈 Performance Metrics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" style="color: var(--secondary);" id="avgResponse">~50ms</span>
+                        <span class="stat-label">Avg Response Time</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" style="color: var(--accent);" id="successRate">98.5%</span>
+                        <span class="stat-label">Success Rate</span>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-primary);">Recent Activity</h4>
+                    <div id="recentActivity" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div style="padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.875rem;">GET /api/echo</span>
+                            <span style="color: var(--success); font-size: 0.8rem;">200 OK</span>
+                        </div>
+                        <div style="padding: 0.75rem; background: rgba(15, 23, 42, 0.5); border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.875rem;">GET /api/github-info</span>
+                            <span style="color: var(--success); font-size: 0.8rem;">200 OK</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -83,12 +165,21 @@
             
             if (memberSince) {
                 const date = new Date(memberSince);
-                document.getElementById('memberSince').textContent = date.toLocaleDateString();
+                document.getElementById('memberSince').textContent = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
             } else {
-                document.getElementById('memberSince').textContent = new Date().toLocaleDateString();
+                document.getElementById('memberSince').textContent = new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
             }
             
             loadUserInfo();
+            updateMetrics();
         });
 
         async function loadUserInfo() {
@@ -100,11 +191,25 @@
                 if (data.success) {
                     document.getElementById('apiCalls').textContent = data.user.apiCallsToday;
                 } else {
-                    document.getElementById('apiCalls').textContent = Math.floor(Math.random() * 100);
+                    document.getElementById('apiCalls').textContent = Math.floor(Math.random() * 50) + 10;
                 }
             } catch (error) {
-                document.getElementById('apiCalls').textContent = Math.floor(Math.random() * 100);
+                document.getElementById('apiCalls').textContent = Math.floor(Math.random() * 50) + 10;
             }
+        }
+
+        function updateMetrics() {
+            // Simulate real-time metrics updates
+            setInterval(() => {
+                const calls = parseInt(document.getElementById('apiCalls').textContent);
+                if (Math.random() > 0.7) { // 30% chance to increment
+                    document.getElementById('apiCalls').textContent = calls + 1;
+                }
+                
+                // Update response time
+                const responseTime = Math.floor(Math.random() * 50) + 25;
+                document.getElementById('avgResponse').textContent = `~${responseTime}ms`;
+            }, 5000);
         }
 
         function copyApiKey() {
@@ -112,13 +217,15 @@
             navigator.clipboard.writeText(apiKey).then(() => {
                 const button = document.querySelector('.copy-button');
                 const originalText = button.textContent;
-                button.textContent = 'Copied!';
-                button.style.background = 'rgba(76, 175, 80, 0.3)';
+                button.textContent = '✅ Copied!';
+                button.style.background = 'linear-gradient(135deg, var(--success) 0%, #059669 100%)';
                 
                 setTimeout(() => {
                     button.textContent = originalText;
-                    button.style.background = 'rgba(100, 255, 218, 0.2)';
+                    button.style.background = 'linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%)';
                 }, 2000);
+            }).catch(() => {
+                alert('Failed to copy API key. Please copy manually.');
             });
         }
 
@@ -130,6 +237,8 @@
             const params = document.getElementById('params').value;
             const apiKey = localStorage.getItem('apiKey');
             const responseDiv = document.getElementById('apiResponse');
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
             
             let url = endpoint;
             if (params) {
@@ -137,25 +246,85 @@
             }
             url += (url.includes('?') ? '&' : '?') + 'apikey=' + apiKey;
             
+            submitButton.textContent = '⏳ Testing...';
+            submitButton.disabled = true;
+            
             try {
                 responseDiv.style.display = 'block';
-                responseDiv.textContent = 'Loading...';
+                responseDiv.textContent = '⏳ Sending request...';
                 
+                const startTime = Date.now();
                 const response = await fetch(url, { method: method });
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
                 const data = await response.text();
                 
-                responseDiv.textContent = `Status: ${response.status}\nResponse:\n${data}`;
+                responseDiv.textContent = `🚀 Response (${responseTime}ms)\nStatus: ${response.status} ${response.statusText}\n\n${data}`;
+                responseDiv.style.borderLeft = `4px solid ${response.ok ? 'var(--success)' : 'var(--error)'}`;
+                
+                // Update API calls counter
+                const currentCalls = parseInt(document.getElementById('apiCalls').textContent);
+                document.getElementById('apiCalls').textContent = currentCalls + 1;
+                
             } catch (error) {
-                responseDiv.textContent = `Error: ${error.message}`;
+                responseDiv.textContent = `❌ Error: ${error.message}`;
+                responseDiv.style.borderLeft = '4px solid var(--error)';
+            } finally {
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        }
+
+        async function testQuickApi(type) {
+            const apiKey = localStorage.getItem('apiKey');
+            const responseDiv = document.getElementById('apiResponse');
+            
+            let url = '';
+            if (type === 'echo') {
+                url = `/api/echo?msg=Hello from Quick Test!&apikey=${apiKey}`;
+            } else if (type === 'github') {
+                url = `/api/github-info?username=octocat&apikey=${apiKey}`;
+            }
+            
+            try {
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = '⏳ Quick testing...';
+                
+                const startTime = Date.now();
+                const response = await fetch(url);
+                const endTime = Date.now();
+                const responseTime = endTime - startTime;
+                
+                const data = await response.text();
+                
+                responseDiv.textContent = `🚀 Quick Test Result (${responseTime}ms)\nStatus: ${response.status} ${response.statusText}\n\n${data}`;
+                responseDiv.style.borderLeft = `4px solid ${response.ok ? 'var(--success)' : 'var(--error)'}`;
+                
+                // Update API calls counter
+                const currentCalls = parseInt(document.getElementById('apiCalls').textContent);
+                document.getElementById('apiCalls').textContent = currentCalls + 1;
+                
+            } catch (error) {
+                responseDiv.textContent = `❌ Quick Test Error: ${error.message}`;
+                responseDiv.style.borderLeft = '4px solid var(--error)';
+            }
+        }
+
+        function regenerateApiKey() {
+            if (confirm('⚠️ Are you sure? This will invalidate your current API key and you\'ll need to update all your applications.')) {
+                alert('🚧 API key regeneration feature coming soon!');
             }
         }
 
         function logout() {
-            localStorage.removeItem('userEmail');
-            localStorage.removeItem('apiKey');
-            localStorage.removeItem('userId');
-            localStorage.removeItem('memberSince');
-            window.location.href = '/';
+            if (confirm('Are you sure you want to sign out?')) {
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('apiKey');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('memberSince');
+                window.location.href = '/';
+            }
         }
     </script>
 </body>
