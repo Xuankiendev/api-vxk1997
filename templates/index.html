@@ -1,44 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Platform - Modern API Management</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>API Platform - Modern API Management</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+  <style>
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal {
+      background: var(--background);
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .modal h3 {
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .modal p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .modal-buttons a,
+    .modal-buttons button {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+    }
+
+    .modal-buttons a {
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+    }
+
+    .modal-buttons button {
+      background: var(--error);
+      color: white;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>API Platform</h1>
-        <div class="nav-links">
-            <a href="/signup" class="button">🚀 Get Started</a>
-            <a href="/login" class="button">🔑 Sign In</a>
-        </div>
-        <div class="api-docs">
-            <h2>⚡ Powerful API Management</h2>
-            <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
-                Build, manage, and scale your APIs with our modern platform. 
-                Get instant access to powerful endpoints and real-time analytics.
-            </p>
-            <code>/api/echo?msg=hello&apikey=your-api-key</code>
-            <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
-                <div style="text-align: center;">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
-                    <div style="font-weight: 600; color: var(--text-primary);">Lightning Fast</div>
-                    <div style="color: var(--text-muted); font-size: 0.875rem;">Sub-100ms response time</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
-                    <div style="font-weight: 600; color: var(--text-primary);">Secure</div>
-                    <div style="color: var(--text-muted); font-size: 0.875rem;">Enterprise-grade security</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
-                    <div style="font-weight: 600; color: var(--text-primary);">Analytics</div>
-                    <div style="color: var(--text-muted); font-size: 0.875rem;">Real-time insights</div>
-                </div>
-            </div>
-        </div>
+  <div class="container">
+    <h1>API Platform</h1>
+    <div class="nav-links">
+      <a href="#" class="button" onclick="openModal()">🚀 Get Started</a>
+      <a href="/login" class="button">🔑 Sign In</a>
     </div>
+    <div class="api-docs">
+      <h2>⚡ Powerful API Management</h2>
+      <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+        Build, manage, and scale your APIs with our modern platform. 
+        Get instant access to powerful endpoints and real-time analytics.
+      </p>
+      <code>/api/echo?msg=hello&apikey=your-api-key</code>
+      <div style="margin-top: 2rem; display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+        <div style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">⚡</div>
+          <div style="font-weight: 600; color: var(--text-primary);">Lightning Fast</div>
+          <div style="color: var(--text-muted); font-size: 0.875rem;">Sub-100ms response time</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔒</div>
+          <div style="font-weight: 600; color: var(--text-primary);">Secure</div>
+          <div style="color: var(--text-muted); font-size: 0.875rem;">Enterprise-grade security</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+          <div style="font-weight: 600; color: var(--text-primary);">Analytics</div>
+          <div style="color: var(--text-muted); font-size: 0.875rem;">Real-time insights</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="policyModal">
+    <div class="modal">
+      <h3>📄 Privacy & Terms</h3>
+      <p>
+        Please read our <a href="/docs" target="_blank" style="color: var(--primary); font-weight: 500;">Privacy Policy and Terms</a> before signing up.
+      </p>
+      <div class="modal-buttons">
+        <a href="/signup">I Agree</a>
+        <button onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal() {
+      document.getElementById('policyModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('policyModal').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
