@@ -83,24 +83,6 @@ code {
     font-family: monospace;
 }
 
-#apiKey {
-    margin-top: 1rem;
-    text-align: center;
-    padding: 1rem;
-    background: #e8f5e9;
-    border-radius: 4px;
-}
-
-@media (max-width: 600px) {
-    .container {
-        margin: 1rem auto;
-    }
-    
-    .auth-form {
-        max-width: 100%;
-    }
-}
-/* Thêm vào cuối file style.css */
 .message {
     display: none;
     margin-top: 1rem;
@@ -120,7 +102,7 @@ code {
     text-align: center;
 }
 
-form input:focus {
+input:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -128,4 +110,14 @@ form input:focus {
 
 .button:active {
     transform: translateY(1px);
+}
+
+@media (max-width: 600px) {
+    .container {
+        margin: 1rem auto;
+    }
+    
+    .auth-form {
+        max-width: 100%;
+    }
 }
