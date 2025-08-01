@@ -19,5 +19,9 @@
       "src": "/(.*)",
       "dest": "src/main.py"
     }
-  ]
+  ],
+  "env": {
+    "PYTHONPATH": ".",
+    "DATABASE_URL": "postgresql://neondb_owner:npg_vdMq1IOD6wiR@ep-orange-star-a18qqv9e-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+  }
 }
