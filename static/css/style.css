@@ -100,3 +100,32 @@ code {
         max-width: 100%;
     }
 }
+/* Thêm vào cuối file style.css */
+.message {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #e8f5e9;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.error {
+    display: none;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #ffebee;
+    border-radius: 4px;
+    color: #c62828;
+    text-align: center;
+}
+
+form input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.button:active {
+    transform: translateY(1px);
+}
