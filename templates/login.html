@@ -37,9 +37,18 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    apiKeyDiv.innerHTML = `Your API Key: <code>${data.apiKey}</code>`;
+                    apiKeyDiv.innerHTML = `Login successful! Redirecting to dashboard...`;
                     apiKeyDiv.style.display = 'block';
                     errorDiv.style.display = 'none';
+                    
+                    localStorage.setItem('userEmail', data.user.email);
+                    localStorage.setItem('apiKey', data.apiKey);
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('memberSince', data.user.createdAt);
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
                 } else {
                     errorDiv.textContent = data.error;
                     errorDiv.style.display = 'block';
