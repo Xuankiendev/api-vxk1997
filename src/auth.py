@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse
 from . import db, utils
 
 router = APIRouter()
@@ -13,25 +14,41 @@ async def validateApiKey(apiKey: str, db: Session = Depends(db.getDb)):
     return user
 
 @router.post("/signup")
-async def signup(request: Request, email: str, password: str, db: Session = Depends(db.getDb)):
-    hashedPassword = utils.hashPassword(password)
-    apiKey = utils.generateApiKey()
-    
-    user = db.User(
-        email=email,
-        password=hashedPassword,
-        apiKey=apiKey
-    )
-    
-    db.add(user)
-    db.commit()
-    
-    return {"apiKey": apiKey}
+async def signup(email: str = Form(...), password: str = Form(...), db: Session = Depends(db.getDb)):
+    try:
+        hashedPassword = utils.hashPassword(password)
+        apiKey = utils.generateApiKey()
+        
+        user = db.User(
+            email=email,
+            password=hashedPassword,
+            apiKey=apiKey
+        )
+        
+        db.add(user)
+        db.commit()
+        
+        return JSONResponse(content={"success": True, "apiKey": apiKey})
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Email already exists or invalid input"}
+        )
 
 @router.post("/login")
-async def login(request: Request, email: str, password: str, db: Session = Depends(db.getDb)):
-    user = db.query(db.User).filter(db.User.email == email).first()
-    if not user or not utils.verifyPassword(password, user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    return {"apiKey": user.apiKey}
+async def login(email: str = Form(...), password: str = Form(...), db: Session = Depends(db.getDb)):
+    try:
+        user = db.query(db.User).filter(db.User.email == email).first()
+        if not user or not utils.verifyPassword(password, user.password):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "Invalid credentials"}
+            )
+        
+        return JSONResponse(content={"success": True, "apiKey": user.apiKey})
+    except Exception as e:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "error": "Invalid request"}
+        )
