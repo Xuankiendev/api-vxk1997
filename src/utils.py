@@ -1,10 +1,11 @@
-import secrets, bcrypt
+import hashlib
+import uuid
 
-def hashPassword(pw: str) -> str:
-    return bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
+def hashPassword(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
 
-def checkPassword(pw: str, hashed: str) -> bool:
-    return bcrypt.checkpw(pw.encode(), hashed.encode())
+def generateApiKey() -> str:
+    return str(uuid.uuid4())
 
-def generateKey() -> str:
-    return secrets.tokenUrlsafe(32)
+def verifyPassword(plainPassword: str, hashedPassword: str) -> bool:
+    return hashPassword(plainPassword) == hashedPassword
