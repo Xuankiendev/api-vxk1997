@@ -8,21 +8,10 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
     <style>
         .chat-container {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 2rem auto;
             padding: 0 1rem;
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 1.5rem;
             height: calc(100vh - 6rem);
-        }
-        
-        .chat-sidebar {
-            background: rgba(15, 23, 42, 0.5);
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            padding: 1.5rem;
-            overflow-y: auto;
         }
         
         .chat-main {
@@ -31,6 +20,7 @@
             border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
+            height: 100%;
         }
         
         .chat-header {
@@ -55,97 +45,22 @@
             border-top: 1px solid var(--border);
         }
         
-        .online-users {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        
-        .stats-card {
-            background: rgba(30, 41, 59, 0.5);
-            border-radius: 12px;
-            padding: 1rem;
-            border: 1px solid var(--border);
-            margin-bottom: 1.5rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-value {
-            display: block;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-        
-        .user-item {
-            padding: 0.75rem;
-            background: rgba(30, 41, 59, 0.3);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            border: 1px solid transparent;
-        }
-        
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            color: white;
-            font-size: 0.875rem;
-        }
-        
-        .user-email {
-            font-size: 0.875rem;
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-        
-        .online-indicator {
-            width: 8px;
-            height: 8px;
-            background: var(--success);
-            border-radius: 50%;
-            margin-left: auto;
-        }
-        
         .message {
             padding: 1rem 1.25rem;
             border-radius: 12px;
             background: rgba(30, 41, 59, 0.8);
             border: 1px solid var(--border);
-            position: relative;
+            max-width: 70%;
         }
         
         .message.own {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
-            margin-left: 20%;
+            margin-left: auto;
         }
         
         .message.other {
-            margin-right: 20%;
+            margin-right: auto;
         }
         
         .message-header {
@@ -165,7 +80,7 @@
         }
         
         .message.other .message-sender {
-            color: var(--primary);
+            color: #6366f1;
         }
         
         .message-time {
@@ -182,6 +97,53 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 1rem 1.25rem;
+            border: 2px solid #374151;
+            border-radius: 25px;
+            background: #1f2937;
+            color: #f3f4f6;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        .chat-input:focus {
+            border-color: #6366f1;
+            background: #111827;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .chat-input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .send-button {
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .send-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+        
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .empty-state {
@@ -201,33 +163,22 @@
         
         @media (max-width: 768px) {
             .chat-container {
-                grid-template-columns: 1fr;
-                height: auto;
-                gap: 1rem;
+                margin: 1rem auto;
+                padding: 0 0.5rem;
             }
             
-            .chat-sidebar {
-                order: 2;
-                max-height: 400px;
+            .message {
+                max-width: 85%;
             }
             
-            .chat-main {
-                order: 1;
-                min-height: 500px;
-            }
-            
-            .message.own {
-                margin-left: 10%;
-            }
-            
-            .message.other {
-                margin-right: 10%;
+            .chat-input {
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard-header" style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+    <div class="dashboard-header" style="max-width: 800px; margin: 0 auto; padding: 1rem;">
         <div class="user-info">
             <div class="avatar" id="avatar">U</div>
             <div>
@@ -244,36 +195,11 @@
     </div>
 
     <div class="chat-container">
-        <div class="chat-sidebar">
-            <h3>🌍 Chat Stats</h3>
-            
-            <div class="stats-card">
-                <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">📊 Community</h4>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-value" id="totalUsers">0</span>
-                        <div class="stat-label">Total Users</div>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value" style="color: var(--success);" id="activeUsers">0</span>
-                        <div class="stat-label">Active Today</div>
-                    </div>
-                </div>
-            </div>
-            
-            <h4 style="margin-bottom: 1rem; color: var(--text-primary);">🟢 Active Users</h4>
-            <div class="online-users" id="onlineUsers">
-                <div class="empty-state">
-                    <p>Loading users...</p>
-                </div>
-            </div>
-        </div>
-
         <div class="chat-main">
             <div class="chat-header">
                 <div>
                     <h3>💬 Global Chat Room</h3>
-                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;" id="chatStatus">Welcome to the community chat!</p>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">Chat with everyone in the community</p>
                 </div>
                 <button class="button" onclick="loadMessages()" style="background: linear-gradient(135deg, var(--accent) 0%, var(--warning) 100%);">
                     🔄 Refresh
@@ -283,15 +209,16 @@
             <div class="chat-messages" id="chatMessages">
                 <div class="empty-state">
                     <h3>💬 Welcome to Global Chat</h3>
-                    <p>Start chatting with the community! Your messages will appear here.</p>
+                    <p>Start chatting with the community!</p>
                 </div>
             </div>
 
             <div class="chat-input-area">
                 <form class="chat-form" onsubmit="sendMessage(event)">
-                    <input type="text" id="messageInput" placeholder="Type your message to the community..." required style="flex: 1;" maxlength="1000">
-                    <button type="submit" class="button" style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);">
-                        📤 Send
+                    <input type="text" id="messageInput" class="chat-input" placeholder="What's on your mind? Share with the community..." required maxlength="1000">
+                    <button type="submit" class="send-button">
+                        <span>Send</span>
+                        <span>🚀</span>
                     </button>
                 </form>
             </div>
@@ -316,12 +243,8 @@
             document.getElementById('avatar').textContent = userEmail.charAt(0).toUpperCase();
             
             loadMessages();
-            loadOnlineUsers();
             
-            refreshInterval = setInterval(() => {
-                loadMessages();
-                loadOnlineUsers();
-            }, 3000);
+            refreshInterval = setInterval(loadMessages, 2000);
         });
 
         async function loadMessages() {
@@ -340,15 +263,11 @@
                         messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
                         
                         const messageTime = new Date(message.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        const messageDate = new Date(message.createdAt).toLocaleDateString();
-                        const today = new Date().toLocaleDateString();
-                        
-                        const displayTime = messageDate === today ? messageTime : `${messageDate} ${messageTime}`;
                         
                         messageDiv.innerHTML = `
                             <div class="message-header">
                                 <div class="message-sender">${isOwn ? 'You' : message.userEmail}</div>
-                                <div class="message-time">${displayTime}</div>
+                                <div class="message-time">${messageTime}</div>
                             </div>
                             <div class="message-content">${message.message}</div>
                         `;
@@ -370,41 +289,6 @@
             }
         }
 
-        async function loadOnlineUsers() {
-            const apiKey = localStorage.getItem('apiKey');
-            try {
-                const response = await fetch(`/api/online-users?apikey=${apiKey}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('totalUsers').textContent = data.totalUsers;
-                    document.getElementById('activeUsers').textContent = data.activeCount;
-                    
-                    const onlineUsers = document.getElementById('onlineUsers');
-                    
-                    if (data.activeUsers.length > 0) {
-                        onlineUsers.innerHTML = '';
-                        data.activeUsers.forEach(user => {
-                            const userDiv = document.createElement('div');
-                            userDiv.className = 'user-item';
-                            
-                            userDiv.innerHTML = `
-                                <div class="user-avatar">${user.email.charAt(0).toUpperCase()}</div>
-                                <div class="user-email">${user.email}</div>
-                                <div class="online-indicator"></div>
-                            `;
-                            
-                            onlineUsers.appendChild(userDiv);
-                        });
-                    } else {
-                        onlineUsers.innerHTML = '<div class="empty-state"><p>No active users today</p></div>';
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading online users:', error);
-            }
-        }
-
         async function sendMessage(event) {
             event.preventDefault();
             
@@ -419,8 +303,8 @@
             formData.append('apikey', apiKey);
             
             const submitButton = event.target.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            submitButton.textContent = '📤 Sending...';
+            const originalHtml = submitButton.innerHTML;
+            submitButton.innerHTML = '<span>Sending...</span><span>⏳</span>';
             submitButton.disabled = true;
             
             try {
@@ -434,15 +318,14 @@
                 if (data.success) {
                     messageInput.value = '';
                     loadMessages();
-                    loadOnlineUsers();
                 } else {
-                    alert('Error sending message: ' + data.error);
+                    alert('Error: ' + data.error);
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
                 alert('Error sending message');
             } finally {
-                submitButton.textContent = originalText;
+                submitButton.innerHTML = originalHtml;
                 submitButton.disabled = false;
             }
         }
@@ -469,7 +352,7 @@
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendMessage(e);
+                document.querySelector('.chat-form').dispatchEvent(new Event('submit'));
             }
         });
     </script>
