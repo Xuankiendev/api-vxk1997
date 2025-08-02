@@ -38,6 +38,7 @@
             display: flex;
             flex-direction: column;
             gap: 1rem;
+            min-height: 300px;
         }
         
         .chat-input-area {
@@ -51,16 +52,19 @@
             background: rgba(30, 41, 59, 0.8);
             border: 1px solid var(--border);
             max-width: 70%;
+            word-wrap: break-word;
         }
         
         .message.own {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             color: white;
             margin-left: auto;
+            margin-right: 0;
         }
         
         .message.other {
             margin-right: auto;
+            margin-left: 0;
         }
         
         .message-header {
@@ -208,8 +212,8 @@
 
             <div class="chat-messages" id="chatMessages">
                 <div class="empty-state">
-                    <h3>💬 Welcome to Global Chat</h3>
-                    <p>Start chatting with the community!</p>
+                    <h3>💬 Loading...</h3>
+                    <p>Please wait...</p>
                 </div>
             </div>
 
@@ -239,62 +243,68 @@
             }
             
             currentUserEmail = userEmail;
-            document.getElementById('userEmail').textContent = `Global Chat - ${userEmail}`;
+            document.getElementById('userEmail').textContent = 'Global Chat - ' + userEmail;
             document.getElementById('avatar').textContent = userEmail.charAt(0).toUpperCase();
             
             loadMessages();
-            
-            refreshInterval = setInterval(loadMessages, 2000);
+            refreshInterval = setInterval(loadMessages, 3000);
         });
 
         async function loadMessages() {
             const apiKey = localStorage.getItem('apiKey');
+            if (!apiKey) return;
+            
             try {
-                const response = await fetch(`/api/messages?apikey=${apiKey}`);
+                const response = await fetch('/api/messages?apikey=' + apiKey);
                 const data = await response.json();
-                
-                console.log('Messages data:', data);
                 
                 const chatMessages = document.getElementById('chatMessages');
                 
-                if (data.success && data.messages && data.messages.length > 0) {
-                    chatMessages.innerHTML = '';
-                    data.messages.forEach(message => {
-                        const messageDiv = document.createElement('div');
-                        const isOwn = message.userEmail === currentUserEmail;
-                        messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+                if (data.success) {
+                    if (data.messages && data.messages.length > 0) {
+                        chatMessages.innerHTML = '';
                         
-                        const messageTime = new Date(message.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        data.messages.forEach(function(message) {
+                            const messageDiv = document.createElement('div');
+                            const isOwn = message.userEmail === currentUserEmail;
+                            messageDiv.className = 'message ' + (isOwn ? 'own' : 'other');
+                            
+                            const messageTime = new Date(message.createdAt).toLocaleTimeString([], {
+                                hour: '2-digit', 
+                                minute: '2-digit'
+                            });
+                            
+                            messageDiv.innerHTML = 
+                                '<div class="message-header">' +
+                                    '<div class="message-sender">' + (isOwn ? 'You' : message.userEmail) + '</div>' +
+                                    '<div class="message-time">' + messageTime + '</div>' +
+                                '</div>' +
+                                '<div class="message-content">' + message.message + '</div>';
+                            
+                            chatMessages.appendChild(messageDiv);
+                        });
                         
-                        messageDiv.innerHTML = `
-                            <div class="message-header">
-                                <div class="message-sender">${isOwn ? 'You' : message.userEmail}</div>
-                                <div class="message-time">${messageTime}</div>
-                            </div>
-                            <div class="message-content">${message.message}</div>
-                        `;
-                        
-                        chatMessages.appendChild(messageDiv);
-                    });
-                    
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else {
+                        chatMessages.innerHTML = 
+                            '<div class="empty-state">' +
+                                '<h3>💬 Be the first to chat!</h3>' +
+                                '<p>No messages yet. Start the conversation!</p>' +
+                            '</div>';
+                    }
                 } else {
-                    console.log('No messages or error:', data);
-                    chatMessages.innerHTML = `
-                        <div class="empty-state">
-                            <h3>💬 Be the first to chat!</h3>
-                            <p>No messages yet. Start the conversation!</p>
-                        </div>
-                    `;
+                    chatMessages.innerHTML = 
+                        '<div class="empty-state">' +
+                            '<h3>❌ Error</h3>' +
+                            '<p>Failed to load messages</p>' +
+                        '</div>';
                 }
             } catch (error) {
-                console.error('Error loading messages:', error);
-                document.getElementById('chatMessages').innerHTML = `
-                    <div class="empty-state">
-                        <h3>❌ Error loading messages</h3>
-                        <p>Please try refreshing the page</p>
-                    </div>
-                `;
+                document.getElementById('chatMessages').innerHTML = 
+                    '<div class="empty-state">' +
+                        '<h3>❌ Connection Error</h3>' +
+                        '<p>Unable to connect to server</p>' +
+                    '</div>';
             }
         }
 
@@ -326,12 +336,11 @@
                 
                 if (data.success) {
                     messageInput.value = '';
-                    loadMessages();
+                    setTimeout(loadMessages, 500);
                 } else {
                     alert('Error: ' + data.error);
                 }
             } catch (error) {
-                console.error('Error sending message:', error);
                 alert('Error sending message');
             } finally {
                 submitButton.innerHTML = originalHtml;
