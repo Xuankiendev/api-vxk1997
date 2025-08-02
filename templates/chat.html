@@ -253,9 +253,11 @@
                 const response = await fetch(`/api/messages?apikey=${apiKey}`);
                 const data = await response.json();
                 
+                console.log('Messages data:', data);
+                
                 const chatMessages = document.getElementById('chatMessages');
                 
-                if (data.success && data.messages.length > 0) {
+                if (data.success && data.messages && data.messages.length > 0) {
                     chatMessages.innerHTML = '';
                     data.messages.forEach(message => {
                         const messageDiv = document.createElement('div');
@@ -276,7 +278,8 @@
                     });
                     
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-                } else if (data.success) {
+                } else {
+                    console.log('No messages or error:', data);
                     chatMessages.innerHTML = `
                         <div class="empty-state">
                             <h3>💬 Be the first to chat!</h3>
@@ -286,6 +289,12 @@
                 }
             } catch (error) {
                 console.error('Error loading messages:', error);
+                document.getElementById('chatMessages').innerHTML = `
+                    <div class="empty-state">
+                        <h3>❌ Error loading messages</h3>
+                        <p>Please try refreshing the page</p>
+                    </div>
+                `;
             }
         }
 
