@@ -58,7 +58,7 @@ async def dynamicApi(apiName: str, request: Request, db: Session = Depends(getDb
 
     try:
         result = await module.run(params, db)
-        return JSONResponse(content={"success": True, "data": result})
+        return JSONResponse(content={"success": True, "ownerAPI": "VuXuanKien1997", "data": result})
     except HTTPException as e:
         raise e
     except Exception as e:
