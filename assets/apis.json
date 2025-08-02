@@ -4,5 +4,9 @@
   },
   "github_info": {
     "params": ["username", "apiKey"]
+  },
+  "download": {
+    "params": ["url", "apiKey"]
   }
+}
 }
