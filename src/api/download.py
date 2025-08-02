@@ -13,9 +13,6 @@ async def run(params: dict, db: Session):
     await validateApiKey(params["apiKey"], db)
     
     url = params.get("url")
-    if not url:
-        return {"error": "URL parameter is required"}
-    
     try:
         platform = detectPlatform(url)
         if platform == "unsupported":
