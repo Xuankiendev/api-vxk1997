@@ -1,8 +1,8 @@
 {
   "echo": {
-    "params": ["msg"]
+    "params": ["msg", "apiKey"]
   },
   "github_info": {
-    "params": ["username"]
+    "params": ["username", "apiKey"]
   }
 }
