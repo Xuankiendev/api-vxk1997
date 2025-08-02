@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, create_engine
 from sqlalchemy.orm import relationship
 from . import db
-from .db import User, Base
+from .db import User, Base, engine
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -20,6 +20,8 @@ class ChatMessage(Base):
     createdAt = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User")
+
+Base.metadata.create_all(bind=engine)
 
 @router.get("/chat")
 async def chatPage(request: Request):
