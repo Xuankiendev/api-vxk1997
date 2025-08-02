@@ -1,16 +1,14 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from .api import example, github_info
-from . import auth
+from . import auth, api
 
-app authauth= FastAPI()
+app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 app.include_router(auth.router)
-app.include_router(example.router)
-app.include_router(github_info.router)
+api.loadRouters(app)
 
 @app.get("/")
 async def home(request: Request):
@@ -29,5 +27,5 @@ async def dashboardPage(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
 @app.get("/privacy")
-async def dashboardPage(request: Request):
+async def privacyPage(request: Request):
     return templates.TemplateResponse("privacy.html", {"request": request})
