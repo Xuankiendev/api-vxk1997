@@ -3,11 +3,10 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey, create_engine
 from sqlalchemy.orm import relationship
 from . import db
 from .db import User, Base
-from .auth import validateApiKey
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -20,7 +19,7 @@ class ChatMessage(Base):
     message = Column(Text, nullable=False)
     createdAt = Column(DateTime, default=datetime.utcnow)
     
-    user = relationship("User", foreign_keys=[userId])
+    user = relationship("User")
 
 @router.get("/chat")
 async def chatPage(request: Request):
@@ -33,7 +32,9 @@ async def sendMessage(
     db: Session = Depends(db.getDb)
 ):
     try:
-        user = await validateApiKey(apikey, db)
+        user = db.query(User).filter(User.apiKey == apikey).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid API key")
         
         if not message.strip():
             return JSONResponse(
@@ -75,9 +76,11 @@ async def sendMessage(
 @router.get("/api/messages")
 async def getMessages(apikey: str, db: Session = Depends(db.getDb)):
     try:
-        await validateApiKey(apikey, db)
+        user = db.query(User).filter(User.apiKey == apikey).first()
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid API key")
         
-        messages = db.query(ChatMessage).order_by(ChatMessage.createdAt.desc()).limit(100).all()
+        messages = db.query(ChatMessage).order_by(ChatMessage.createdAt.desc()).limit(50).all()
         
         messageList = []
         for msg in messages:
@@ -93,46 +96,6 @@ async def getMessages(apikey: str, db: Session = Depends(db.getDb)):
         return JSONResponse(content={
             "success": True,
             "messages": messageList
-        })
-        
-    except HTTPException as e:
-        return JSONResponse(
-            status_code=e.status_code,
-            content={"success": False, "error": e.detail}
-        )
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": str(e)}
-        )
-
-@router.get("/api/online-users")
-async def getOnlineUsers(apikey: str, db: Session = Depends(db.getDb)):
-    try:
-        await validateApiKey(apikey, db)
-        
-        recentMessages = db.query(ChatMessage.userId).filter(
-            ChatMessage.createdAt >= datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
-        ).distinct()
-        
-        activeUserIds = [msg.userId for msg in recentMessages]
-        
-        activeUsers = []
-        for userId in activeUserIds:
-            user = db.query(User).filter(User.id == userId).first()
-            if user:
-                activeUsers.append({
-                    "email": user.email,
-                    "id": user.id
-                })
-        
-        totalUsers = db.query(User).count()
-        
-        return JSONResponse(content={
-            "success": True,
-            "activeUsers": activeUsers,
-            "totalUsers": totalUsers,
-            "activeCount": len(activeUsers)
         })
         
     except HTTPException as e:
