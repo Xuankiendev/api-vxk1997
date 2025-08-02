@@ -75,29 +75,6 @@ async def login(email: str = Form(...), password: str = Form(...), db: Session =
             content={"success": False, "error": str(e)}
         )
 
-@router.get("/api/user-info")
-async def getUserInfo(apikey: str, db: Session = Depends(db.getDb)):
-    try:
-        user = db.query(User).filter(User.apiKey == apikey).first()
-        if not user:
-            raise HTTPException(status_code=401, detail="Invalid API key")
-        
-        return JSONResponse(content={
-            "success": True,
-            "user": {
-                "email": user.email,
-                "id": user.id,
-                "apiKey": user.apiKey,
-                "createdAt": user.created_at.isoformat() if hasattr(user, 'created_at') else datetime.now().isoformat()
-            }
-        })
-        
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "error": str(e)}
-        )
-
 async def validateApiKey(apiKey: str, db: Session = Depends(db.getDb)):
     user = db.query(User).filter(User.apiKey == apiKey).first()
     if not user:
