@@ -1,0 +1,8 @@
+{
+  "echo": {
+    "params": ["msg"]
+  },
+  "github_info": {
+    "params": ["username"]
+  }
+}
