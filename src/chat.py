@@ -82,13 +82,14 @@ async def getMessages(apikey: str, db: Session = Depends(db.getDb)):
         if not user:
             raise HTTPException(status_code=401, detail="Invalid API key")
         
-        messages = db.query(ChatMessage).order_by(ChatMessage.createdAt.desc()).limit(50).all()
+        messages = db.query(ChatMessage).join(User).order_by(ChatMessage.createdAt.desc()).limit(50).all()
         
         messageList = []
         for msg in messages:
+            user = db.query(User).filter(User.id == msg.userId).first()
             messageList.append({
                 "id": msg.id,
-                "userEmail": msg.user.email,
+                "userEmail": user.email if user else "Unknown",
                 "message": msg.message,
                 "createdAt": msg.createdAt.isoformat()
             })
