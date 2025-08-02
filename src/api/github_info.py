@@ -1,18 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 import requests
+from fastapi import HTTPException
 
-from src.auth import validateApiKey
-from src.db import getDb
+async def run(params, db):
+    username = params.get("username")
+    apiKey = params.get("apiKey")
 
-router = APIRouter(prefix="/api")
-
-@router.get("/github_info")
-async def getGithubInfo(username: str, apiKey: str, db: Session = Depends(getDb)):
+    from src.auth import validateApiKey
     await validateApiKey(apiKey, db)
 
     url = f"https://api.github.com/users/{username}"
-    
+
     try:
         response = requests.get(url, timeout=10)
         if response.status_code == 404:
