@@ -11,7 +11,6 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(auth.router)
 app.include_router(example.router)
 app.include_router(github_info.router)
-app.include_router(chat.router)
 
 @app.get("/")
 async def home(request: Request):
@@ -31,4 +30,4 @@ async def dashboardPage(request: Request):
 
 @app.get("/privacy")
 async def dashboardPage(request: Request):
-    return templates.TemplateResponse("docs.html", {"request": request})
+    return templates.TemplateResponse("privacy.html", {"request": request})
