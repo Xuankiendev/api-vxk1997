@@ -16,13 +16,11 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
     
     id = Column(Integer, primary_key=True, index=True)
-    senderId = Column(Integer, ForeignKey("users.id"), nullable=False)
-    receiverId = Column(Integer, ForeignKey("users.id"), nullable=False)
+    userId = Column(Integer, ForeignKey("users.id"), nullable=False)
     message = Column(Text, nullable=False)
     createdAt = Column(DateTime, default=datetime.utcnow)
     
-    sender = relationship("User", foreign_keys=[senderId])
-    receiver = relationship("User", foreign_keys=[receiverId])
+    user = relationship("User", foreign_keys=[userId])
 
 @router.get("/chat")
 async def chatPage(request: Request):
@@ -30,31 +28,22 @@ async def chatPage(request: Request):
 
 @router.post("/api/send-message")
 async def sendMessage(
-    receiverEmail: str = Form(...),
     message: str = Form(...),
     apikey: str = Form(...),
     db: Session = Depends(db.getDb)
 ):
     try:
-        sender = await validateApiKey(apikey, db)
+        user = await validateApiKey(apikey, db)
         
-        receiver = db.query(User).filter(User.email == receiverEmail).first()
-        if not receiver:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "error": "Receiver not found"}
-            )
-        
-        if sender.id == receiver.id:
+        if not message.strip():
             return JSONResponse(
                 status_code=400,
-                content={"success": False, "error": "Cannot send message to yourself"}
+                content={"success": False, "error": "Message cannot be empty"}
             )
         
         newMessage = ChatMessage(
-            senderId=sender.id,
-            receiverId=receiver.id,
-            message=message
+            userId=user.id,
+            message=message.strip()
         )
         
         db.add(newMessage)
@@ -65,8 +54,7 @@ async def sendMessage(
             "success": True,
             "message": {
                 "id": newMessage.id,
-                "senderEmail": sender.email,
-                "receiverEmail": receiver.email,
+                "userEmail": user.email,
                 "message": newMessage.message,
                 "createdAt": newMessage.createdAt.isoformat()
             }
@@ -85,33 +73,19 @@ async def sendMessage(
         )
 
 @router.get("/api/messages")
-async def getMessages(apikey: str, chatWith: str = None, db: Session = Depends(db.getDb)):
+async def getMessages(apikey: str, db: Session = Depends(db.getDb)):
     try:
-        user = await validateApiKey(apikey, db)
+        await validateApiKey(apikey, db)
         
-        query = db.query(ChatMessage).filter(
-            (ChatMessage.senderId == user.id) | (ChatMessage.receiverId == user.id)
-        )
-        
-        if chatWith:
-            chatUser = db.query(User).filter(User.email == chatWith).first()
-            if chatUser:
-                query = query.filter(
-                    ((ChatMessage.senderId == user.id) & (ChatMessage.receiverId == chatUser.id)) |
-                    ((ChatMessage.senderId == chatUser.id) & (ChatMessage.receiverId == user.id))
-                )
-        
-        messages = query.order_by(ChatMessage.createdAt.desc()).limit(50).all()
+        messages = db.query(ChatMessage).order_by(ChatMessage.createdAt.desc()).limit(100).all()
         
         messageList = []
         for msg in messages:
             messageList.append({
                 "id": msg.id,
-                "senderEmail": msg.sender.email,
-                "receiverEmail": msg.receiver.email,
+                "userEmail": msg.user.email,
                 "message": msg.message,
-                "createdAt": msg.createdAt.isoformat(),
-                "isSent": msg.senderId == user.id
+                "createdAt": msg.createdAt.isoformat()
             })
         
         messageList.reverse()
@@ -132,40 +106,33 @@ async def getMessages(apikey: str, chatWith: str = None, db: Session = Depends(d
             content={"success": False, "error": str(e)}
         )
 
-@router.get("/api/chat-users")
-async def getChatUsers(apikey: str, db: Session = Depends(db.getDb)):
+@router.get("/api/online-users")
+async def getOnlineUsers(apikey: str, db: Session = Depends(db.getDb)):
     try:
-        user = await validateApiKey(apikey, db)
+        await validateApiKey(apikey, db)
         
-        sentMessages = db.query(ChatMessage.receiverId).filter(ChatMessage.senderId == user.id).distinct()
-        receivedMessages = db.query(ChatMessage.senderId).filter(ChatMessage.receiverId == user.id).distinct()
+        recentMessages = db.query(ChatMessage.userId).filter(
+            ChatMessage.createdAt >= datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        ).distinct()
         
-        userIds = set()
-        for msg in sentMessages:
-            userIds.add(msg.receiverId)
-        for msg in receivedMessages:
-            userIds.add(msg.senderId)
+        activeUserIds = [msg.userId for msg in recentMessages]
         
-        chatUsers = []
-        for userId in userIds:
-            chatUser = db.query(User).filter(User.id == userId).first()
-            if chatUser:
-                lastMessage = db.query(ChatMessage).filter(
-                    ((ChatMessage.senderId == user.id) & (ChatMessage.receiverId == userId)) |
-                    ((ChatMessage.senderId == userId) & (ChatMessage.receiverId == user.id))
-                ).order_by(ChatMessage.createdAt.desc()).first()
-                
-                chatUsers.append({
-                    "email": chatUser.email,
-                    "lastMessage": lastMessage.message if lastMessage else "",
-                    "lastMessageTime": lastMessage.createdAt.isoformat() if lastMessage else ""
+        activeUsers = []
+        for userId in activeUserIds:
+            user = db.query(User).filter(User.id == userId).first()
+            if user:
+                activeUsers.append({
+                    "email": user.email,
+                    "id": user.id
                 })
         
-        chatUsers.sort(key=lambda x: x["lastMessageTime"], reverse=True)
+        totalUsers = db.query(User).count()
         
         return JSONResponse(content={
             "success": True,
-            "users": chatUsers
+            "activeUsers": activeUsers,
+            "totalUsers": totalUsers,
+            "activeCount": len(activeUsers)
         })
         
     except HTTPException as e:
