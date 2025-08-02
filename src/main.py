@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 import importlib
 import json
 import os
+import traceback
 
 from . import auth
 from .db import getDb
@@ -13,7 +14,6 @@ from .db import getDb
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-
 app.include_router(auth.router)
 
 with open(os.path.join(os.path.dirname(__file__), "../assets/apis.json")) as f:
@@ -59,5 +59,8 @@ async def dynamicApi(apiName: str, request: Request, db: Session = Depends(getDb
     try:
         result = await module.run(params, db)
         return JSONResponse(content={"success": True, "data": result})
+    except HTTPException as e:
+        raise e
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e) or "Unknown error occurred")
