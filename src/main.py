@@ -29,6 +29,6 @@ async def loginPage(request: Request):
 async def dashboardPage(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
-@app.get("/docs")
+@app.get("/privacy")
 async def dashboardPage(request: Request):
     return templates.TemplateResponse("docs.html", {"request": request})
