@@ -1,15 +1,23 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from . import auth, api
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+import importlib
+import json
+import os
+
+from . import auth
+from .db import getDb
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 app.include_router(auth.router)
-app.include_router(api.router)
-api.loadRouters(app)
+
+with open(os.path.join(os.path.dirname(__file__), "../assets/apis.json")) as f:
+    apis = json.load(f)
 
 @app.get("/")
 async def home(request: Request):
@@ -30,3 +38,26 @@ async def dashboardPage(request: Request):
 @app.get("/privacy")
 async def privacyPage(request: Request):
     return templates.TemplateResponse("privacy.html", {"request": request})
+
+@app.get("/api/{apiName}")
+async def dynamicApi(apiName: str, request: Request, db: Session = Depends(getDb)):
+    if apiName not in apis:
+        raise HTTPException(status_code=404, detail="API not found")
+
+    try:
+        module = importlib.import_module(f"src.api.{apiName}")
+    except Exception:
+        raise HTTPException(status_code=500, detail="API module import failed")
+
+    params = {}
+    for param in apis[apiName]["params"]:
+        value = request.query_params.get(param)
+        if value is None:
+            raise HTTPException(status_code=422, detail=f"Missing parameter: {param}")
+        params[param] = value
+
+    try:
+        result = await module.run(params, db)
+        return JSONResponse(content={"success": True, "data": result})
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
