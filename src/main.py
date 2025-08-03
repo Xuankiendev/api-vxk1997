@@ -12,10 +12,8 @@ from . import auth
 from .db import getDb
 
 app = FastAPI()
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-
 app.include_router(auth.router)
 
 with open(os.path.join(os.path.dirname(__file__), "../assets/apis.json")) as f:
