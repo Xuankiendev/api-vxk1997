@@ -1,8 +1,8 @@
 import hashlib
 import uuid
 import random
-import smtplib
 from datetime import datetime, timedelta
+import smtplib
 from email.message import EmailMessage
 
 def hashPassword(password: str) -> str:
@@ -17,17 +17,19 @@ def generateApiKey() -> str:
 def generateVerificationCode() -> str:
     return str(random.randint(100000, 999999))
 
-def sendVerificationEmail(toEmail: str, code: str):
-    senderEmail = "apivxk1997utilities@gmail.com"
-    senderPassword = "Kien@123"
-    message = EmailMessage()
-    message["Subject"] = "Your Verification Code"
-    message["From"] = senderEmail
-    message["To"] = toEmail
-    message.set_content(f"Your verification code is: {code}. It expires in 1 minute.")
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-        smtp.login(senderEmail, senderPassword)
-        smtp.send_message(message)
-
 def oneMinuteLater() -> datetime:
     return datetime.utcnow() + timedelta(minutes=1)
+
+def sendVerificationEmail(toEmail: str, code: str):
+    senderEmail = "apivxk1997utilities@gmail.com"
+    senderPassword = "jgwcdaniughaooog"
+
+    msg = EmailMessage()
+    msg["Subject"] = "Your Verification Code"
+    msg["From"] = senderEmail
+    msg["To"] = toEmail
+    msg.set_content(f"Your verification code is: {code}. It expires in 1 minute.")
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(senderEmail, senderPassword)
+        smtp.send_message(msg)
