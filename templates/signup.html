@@ -1,382 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - API Platform</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
-    <style>
-        .step-container {
-            display: none;
-        }
-        .step-container.active {
-            display: block;
-        }
-        .password-strength {
-            margin-top: 5px;
-            font-size: 12px;
-        }
-        .strength-weak { color: #ef4444; }
-        .strength-medium { color: #f59e0b; }
-        .strength-strong { color: #10b981; }
-        .verification-input {
-            text-align: center;
-            font-size: 18px;
-            letter-spacing: 2px;
-            font-weight: bold;
-        }
-        .countdown {
-            color: #ef4444;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        .resend-button {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            margin-top: 10px;
-        }
-        .resend-button:hover {
-            background: var(--primary);
-            color: white;
-        }
-        .resend-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-        .step {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #e2e8f0;
-            color: #64748b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 10px;
-            font-weight: bold;
-        }
-        .step.active {
-            background: var(--primary);
-            color: white;
-        }
-        .step.completed {
-            background: #10b981;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account - API Platform</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
-    <div class="container">
-        <h1>Create Account</h1>
-        
-        <div class="step-indicator">
-            <div class="step active" id="stepIndicator1">1</div>
-            <div class="step" id="stepIndicator2">2</div>
-            <div class="step" id="stepIndicator3">3</div>
-        </div>
-        
-        <div class="step-container active" id="step1">
-            <form class="auth-form" id="emailForm">
-                <h3>Enter Your Email</h3>
-                <input type="email" id="email" placeholder="Enter your email address" required>
-                <button type="submit" class="button">📧 Send Verification Code</button>
-            </form>
-        </div>
+  <div class="container">
+    <h1>Create Account</h1>
 
-        <div class="step-container" id="step2">
-            <form class="auth-form" id="verificationForm">
-                <h3>Verify Your Email</h3>
-                <p>We've sent a verification code to <strong id="userEmail"></strong></p>
-                <input type="text" id="verificationCode" class="verification-input" placeholder="000000" maxlength="6" required>
-                <div class="countdown" id="countdown">Code expires in: <span id="timer">60</span>s</div>
-                <button type="submit" class="button">✅ Verify Code</button>
-                <button type="button" class="button resend-button" id="resendButton" disabled>🔄 Resend Code</button>
-            </form>
-        </div>
+    <form class="auth-form" id="verifyForm">
+      <input type="email" id="verifyEmail" placeholder="Enter your email address" required>
+      <button type="submit" class="button">📧 Send Verification Code</button>
+    </form>
 
-        <div class="step-container" id="step3">
-            <form class="auth-form" id="signupForm">
-                <h3>Create Your Password</h3>
-                <input type="password" id="password" placeholder="Create a secure password" required minlength="8">
-                <div class="password-strength" id="passwordStrength"></div>
-                <input type="password" id="confirmPassword" placeholder="Confirm your password" required minlength="8">
-                <button type="submit" class="button">🚀 Create Account</button>
-            </form>
-        </div>
+    <form class="auth-form" id="signupForm" style="display:none">
+      <input type="text" id="email" readonly>
+      <input type="text" id="code" placeholder="Enter verification code" required>
+      <input type="password" id="password" placeholder="Create password" required minlength="6">
+      <input type="password" id="confirmPassword" placeholder="Confirm password" required minlength="6">
+      <button type="submit" class="button">🚀 Create Account</button>
+    </form>
 
-        <p>Already have an account? <a href="/login">Sign in here</a></p>
-        <div id="message" class="message"></div>
-        <div id="error" class="error"></div>
-    </div>
+    <div id="message" class="message"></div>
+    <div id="error" class="error"></div>
+    <p>Already have an account? <a href="/login">Sign in here</a></p>
+  </div>
 
-    <script>
-        let currentEmail = '';
-        let countdownInterval;
-        let countdownTime = 60;
-        let currentStep = 1;
+  <script>
+    const verifyForm = document.getElementById('verifyForm')
+    const signupForm = document.getElementById('signupForm')
+    const messageDiv = document.getElementById('message')
+    const errorDiv = document.getElementById('error')
 
-        const updateStepIndicator = (step) => {
-            for (let i = 1; i <= 3; i++) {
-                const indicator = document.getElementById(`stepIndicator${i}`);
-                indicator.classList.remove('active', 'completed');
-                
-                if (i < step) {
-                    indicator.classList.add('completed');
-                } else if (i === step) {
-                    indicator.classList.add('active');
-                }
-            }
-        };
+    verifyForm.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const email = document.getElementById('verifyEmail').value
+      try {
+        const formData = new FormData()
+        formData.append('email', email)
+        const response = await fetch('/requestVerification', { method: 'POST', body: formData })
+        const data = await response.json()
 
-        const showStep = (stepNumber) => {
-            document.querySelectorAll('.step-container').forEach(step => {
-                step.classList.remove('active');
-            });
-            document.getElementById(`step${stepNumber}`).classList.add('active');
-            currentStep = stepNumber;
-            updateStepIndicator(stepNumber);
-        };
+        if (data.success) {
+          messageDiv.textContent = "✅ Code sent. Please check your email."
+          errorDiv.style.display = 'none'
+          document.getElementById('email').value = email
+          signupForm.style.display = 'block'
+        } else {
+          errorDiv.textContent = "❌ " + data.error
+          errorDiv.style.display = 'block'
+        }
+      } catch (err) {
+        errorDiv.textContent = "❌ Failed to send code."
+        errorDiv.style.display = 'block'
+      }
+    })
 
-        const showMessage = (message, isError = false) => {
-            const messageDiv = document.getElementById('message');
-            const errorDiv = document.getElementById('error');
-            
-            if (isError) {
-                errorDiv.textContent = message;
-                errorDiv.style.display = 'block';
-                messageDiv.style.display = 'none';
-            } else {
-                messageDiv.textContent = message;
-                messageDiv.style.display = 'block';
-                errorDiv.style.display = 'none';
-            }
-        };
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const email = document.getElementById('email').value
+      const code = document.getElementById('code').value
+      const password = document.getElementById('password').value
+      const confirmPassword = document.getElementById('confirmPassword').value
 
-        const clearMessages = () => {
-            document.getElementById('message').style.display = 'none';
-            document.getElementById('error').style.display = 'none';
-        };
+      const formData = new FormData()
+      formData.append('email', email)
+      formData.append('code', code)
+      formData.append('password', password)
+      formData.append('confirmPassword', confirmPassword)
 
-        const startCountdown = () => {
-            countdownTime = 60;
-            const timerElement = document.getElementById('timer');
-            const resendButton = document.getElementById('resendButton');
-            
-            resendButton.disabled = true;
-            
-            countdownInterval = setInterval(() => {
-                countdownTime--;
-                timerElement.textContent = countdownTime;
-                
-                if (countdownTime <= 0) {
-                    clearInterval(countdownInterval);
-                    document.getElementById('countdown').textContent = 'Code has expired';
-                    resendButton.disabled = false;
-                }
-            }, 1000);
-        };
-
-        const checkPasswordStrength = (password) => {
-            const strengthDiv = document.getElementById('passwordStrength');
-            
-            if (password.length < 8) {
-                strengthDiv.textContent = '❌ Password must be at least 8 characters';
-                strengthDiv.className = 'password-strength strength-weak';
-                return false;
-            }
-            
-            const hasUpper = /[A-Z]/.test(password);
-            const hasLower = /[a-z]/.test(password);
-            const hasNumber = /\d/.test(password);
-            const hasSpecial = /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password);
-            
-            const score = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
-            
-            if (score < 4) {
-                strengthDiv.textContent = '⚠️ Password must contain uppercase, lowercase, number and special character';
-                strengthDiv.className = 'password-strength strength-medium';
-                return false;
-            } else {
-                strengthDiv.textContent = '✅ Strong password';
-                strengthDiv.className = 'password-strength strength-strong';
-                return true;
-            }
-        };
-
-        document.getElementById('emailForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearMessages();
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            
-            submitButton.textContent = '⏳ Sending...';
-            submitButton.disabled = true;
-            
-            try {
-                const email = document.getElementById('email').value;
-                const formData = new FormData();
-                formData.append('email', email);
-
-                const response = await fetch('/sendVerificationCode', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentEmail = email;
-                    document.getElementById('userEmail').textContent = email;
-                    showStep(2);
-                    startCountdown();
-                    showMessage('✅ Verification code sent successfully!');
-                } else {
-                    showMessage(`❌ ${data.error}`, true);
-                }
-            } catch (error) {
-                showMessage('❌ Network error. Please try again.', true);
-            } finally {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
-            }
-        });
-
-        document.getElementById('resendButton').addEventListener('click', async () => {
-            const button = document.getElementById('resendButton');
-            const originalText = button.textContent;
-            
-            button.textContent = '⏳ Sending...';
-            button.disabled = true;
-            clearMessages();
-            
-            try {
-                const formData = new FormData();
-                formData.append('email', currentEmail);
-
-                const response = await fetch('/sendVerificationCode', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    startCountdown();
-                    showMessage('✅ New verification code sent!');
-                } else {
-                    showMessage(`❌ ${data.error}`, true);
-                    button.disabled = false;
-                }
-            } catch (error) {
-                showMessage('❌ Failed to resend code.', true);
-                button.disabled = false;
-            } finally {
-                button.textContent = originalText;
-            }
-        });
-
-        document.getElementById('verificationForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearMessages();
-            const code = document.getElementById('verificationCode').value;
-            
-            if (code.length !== 6) {
-                showMessage('❌ Please enter the 6-digit code', true);
-                return;
-            }
-            
-            showStep(3);
-            showMessage('✅ Code verified! Now create your password.');
-        });
-
-        document.getElementById('password').addEventListener('input', function() {
-            checkPasswordStrength(this.value);
-        });
-
-        document.getElementById('confirmPassword').addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = this.value;
-            
-            if (confirmPassword && password !== confirmPassword) {
-                this.style.borderColor = '#ef4444';
-            } else {
-                this.style.borderColor = confirmPassword ? '#10b981' : '#d1d5db';
-            }
-        });
-
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearMessages();
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            const originalText = submitButton.textContent;
-            
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const verificationCode = document.getElementById('verificationCode').value;
-            
-            if (!checkPasswordStrength(password)) {
-                showMessage('❌ Please create a stronger password', true);
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showMessage('❌ Passwords do not match', true);
-                return;
-            }
-            
-            submitButton.textContent = '⏳ Creating account...';
-            submitButton.disabled = true;
-            
-            try {
-                const formData = new FormData();
-                formData.append('email', currentEmail);
-                formData.append('password', password);
-                formData.append('confirmPassword', confirmPassword);
-                formData.append('verificationCode', verificationCode);
-
-                const response = await fetch('/signup', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    showMessage('✅ Account created successfully! Redirecting...');
-                    
-                    localStorage.setItem('userEmail', data.user.email);
-                    localStorage.setItem('apiKey', data.apiKey);
-                    localStorage.setItem('userId', data.user.id);
-                    localStorage.setItem('memberSince', data.user.createdAt);
-                    
-                    setTimeout(() => {
-                        window.location.href = '/dashboard';
-                    }, 2000);
-                } else {
-                    showMessage(`❌ ${data.error}`, true);
-                }
-            } catch (error) {
-                showMessage('❌ Server error. Please try again.', true);
-            } finally {
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
-            }
-        });
-
-        document.getElementById('verificationCode').addEventListener('input', function() {
-            this.value = this.value.replace(/\D/g, '');
-        });
-
-        document.getElementById('email').addEventListener('input', function() {
-            clearMessages();
-        });
-    </script>
+      try {
+        const response = await fetch('/signup', { method: 'POST', body: formData })
+        const data = await response.json()
+        if (data.success) {
+          messageDiv.innerHTML = `✅ Account created! Redirecting...`
+          localStorage.setItem('userEmail', data.user.email)
+          localStorage.setItem('apiKey', data.apiKey)
+          localStorage.setItem('userId', data.user.id)
+          localStorage.setItem('memberSince', data.user.createdAt)
+          setTimeout(() => location.href = "/dashboard", 1500)
+        } else {
+          errorDiv.textContent = "❌ " + data.error
+          errorDiv.style.display = 'block'
+        }
+      } catch (err) {
+        errorDiv.textContent = "❌ Signup failed."
+        errorDiv.style.display = 'block'
+      }
+    })
+  </script>
 </body>
 </html>
