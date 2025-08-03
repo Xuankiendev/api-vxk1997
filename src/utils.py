@@ -1,46 +1,33 @@
 import hashlib
 import uuid
-import re
 import random
-from datetime import datetime
+import smtplib
+from datetime import datetime, timedelta
+from email.message import EmailMessage
 
 def hashPassword(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-def generateApiKey() -> str:
-    return str(uuid.uuid4())
-
 def verifyPassword(plainPassword: str, hashedPassword: str) -> bool:
     return hashPassword(plainPassword) == hashedPassword
 
-def isValidEmail(email: str) -> bool:
-    emailPattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    return re.match(emailPattern, email) is not None
-
-def isStrongPassword(password: str) -> bool:
-    if len(password) < 8:
-        return False
-    
-    hasUpper = any(c.isupper() for c in password)
-    hasLower = any(c.islower() for c in password)
-    hasDigit = any(c.isdigit() for c in password)
-    hasSpecial = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in password)
-    
-    return hasUpper and hasLower and hasDigit and hasSpecial
-
-def generateSessionToken() -> str:
+def generateApiKey() -> str:
     return str(uuid.uuid4())
-
-def sanitizeInput(inputStr: str) -> str:
-    if not inputStr:
-        return ""
-    return inputStr.strip()
-
-def isValidPassword(password: str) -> bool:
-    return len(password) >= 8
-
-def formatDateTime(dt: datetime) -> str:
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 def generateVerificationCode() -> str:
     return str(random.randint(100000, 999999))
+
+def sendVerificationEmail(toEmail: str, code: str):
+    senderEmail = "apivxk1997utilities@gmail.com"
+    senderPassword = "Kien@123"
+    message = EmailMessage()
+    message["Subject"] = "Your Verification Code"
+    message["From"] = senderEmail
+    message["To"] = toEmail
+    message.set_content(f"Your verification code is: {code}. It expires in 1 minute.")
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(senderEmail, senderPassword)
+        smtp.send_message(message)
+
+def oneMinuteLater() -> datetime:
+    return datetime.utcnow() + timedelta(minutes=1)
