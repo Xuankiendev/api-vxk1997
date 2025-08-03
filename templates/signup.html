@@ -1,96 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Account - API Platform</title>
-  <link rel="stylesheet" href="/static/css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - API Platform</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
 </head>
 <body>
-  <div class="container">
-    <h1>Create Account</h1>
+    <div class="container">
+        <h1>Create Account</h1>
+        <form class="auth-form" id="signupForm">
+            <input type="email" id="email" placeholder="Enter your email address" required>
+            <input type="password" id="password" placeholder="Create a secure password" required minlength="6">
+            <button type="submit" class="button">🚀 Create Account</button>
+        </form>
+        <p>Already have an account? <a href="/login">Sign in here</a></p>
+        <div id="apiKey" class="message"></div>
+        <div id="error" class="error"></div>
+    </div>
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('error');
+            const apiKeyDiv = document.getElementById('apiKey');
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            
+            submitButton.textContent = '⏳ Creating account...';
+            submitButton.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('email', document.getElementById('email').value);
+                formData.append('password', document.getElementById('password').value);
 
-    <form class="auth-form" id="verifyForm">
-      <input type="email" id="verifyEmail" placeholder="Enter your email address" required>
-      <button type="submit" class="button">📧 Send Verification Code</button>
-    </form>
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    body: formData
+                });
 
-    <form class="auth-form" id="signupForm" style="display:none">
-      <input type="text" id="email" readonly>
-      <input type="text" id="code" placeholder="Enter verification code" required>
-      <input type="password" id="password" placeholder="Create password" required minlength="6">
-      <input type="password" id="confirmPassword" placeholder="Confirm password" required minlength="6">
-      <button type="submit" class="button">🚀 Create Account</button>
-    </form>
+                const data = await response.json();
+                
+                if (data.success) {
+                    apiKeyDiv.innerHTML = `✅ Account created successfully! Redirecting to dashboard...`;
+                    apiKeyDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    
+                    localStorage.setItem('userEmail', data.user.email);
+                    localStorage.setItem('apiKey', data.apiKey);
+                    localStorage.setItem('userId', data.user.id);
+                    localStorage.setItem('memberSince', data.user.createdAt);
+                    
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = `❌ ${data.error}`;
+                    errorDiv.style.display = 'block';
+                    apiKeyDiv.style.display = 'none';
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
+            } catch (error) {
+                errorDiv.textContent = '❌ Server error. Please try again.';
+                errorDiv.style.display = 'block';
+                apiKeyDiv.style.display = 'none';
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            }
+        });
 
-    <div id="message" class="message"></div>
-    <div id="error" class="error"></div>
-    <p>Already have an account? <a href="/login">Sign in here</a></p>
-  </div>
+        // Add loading animation
+        document.getElementById('email').addEventListener('input', function() {
+            this.style.borderColor = this.value ? 'var(--primary)' : 'var(--border)';
+        });
 
-  <script>
-    const verifyForm = document.getElementById('verifyForm')
-    const signupForm = document.getElementById('signupForm')
-    const messageDiv = document.getElementById('message')
-    const errorDiv = document.getElementById('error')
-
-    verifyForm.addEventListener('submit', async (e) => {
-      e.preventDefault()
-      const email = document.getElementById('verifyEmail').value
-      try {
-        const formData = new FormData()
-        formData.append('email', email)
-        const response = await fetch('/requestVerification', { method: 'POST', body: formData })
-        const data = await response.json()
-
-        if (data.success) {
-          messageDiv.textContent = "✅ Code sent. Please check your email."
-          errorDiv.style.display = 'none'
-          document.getElementById('email').value = email
-          signupForm.style.display = 'block'
-        } else {
-          errorDiv.textContent = "❌ " + data.error
-          errorDiv.style.display = 'block'
-        }
-      } catch (err) {
-        errorDiv.textContent = "❌ Failed to send code."
-        errorDiv.style.display = 'block'
-      }
-    })
-
-    signupForm.addEventListener('submit', async (e) => {
-      e.preventDefault()
-      const email = document.getElementById('email').value
-      const code = document.getElementById('code').value
-      const password = document.getElementById('password').value
-      const confirmPassword = document.getElementById('confirmPassword').value
-
-      const formData = new FormData()
-      formData.append('email', email)
-      formData.append('code', code)
-      formData.append('password', password)
-      formData.append('confirmPassword', confirmPassword)
-
-      try {
-        const response = await fetch('/signup', { method: 'POST', body: formData })
-        const data = await response.json()
-        if (data.success) {
-          messageDiv.innerHTML = `✅ Account created! Redirecting...`
-          localStorage.setItem('userEmail', data.user.email)
-          localStorage.setItem('apiKey', data.apiKey)
-          localStorage.setItem('userId', data.user.id)
-          localStorage.setItem('memberSince', data.user.createdAt)
-          setTimeout(() => location.href = "/dashboard", 1500)
-        } else {
-          errorDiv.textContent = "❌ " + data.error
-          errorDiv.style.display = 'block'
-        }
-      } catch (err) {
-        errorDiv.textContent = "❌ Signup failed."
-        errorDiv.style.display = 'block'
-      }
-    })
-  </script>
+        document.getElementById('password').addEventListener('input', function() {
+            const strength = this.value.length >= 8 ? 'strong' : this.value.length >= 6 ? 'medium' : 'weak';
+            this.style.borderColor = strength === 'strong' ? 'var(--success)' : 
+                                   strength === 'medium' ? 'var(--warning)' : 
+                                   this.value ? 'var(--error)' : 'var(--border)';
+        });
+    </script>
 </body>
 </html>
