@@ -1,6 +1,8 @@
 import hashlib
 import uuid
 import re
+import random
+from datetime import datetime
 
 def hashPassword(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
@@ -41,5 +43,4 @@ def formatDateTime(dt: datetime) -> str:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 def generateVerificationCode() -> str:
-    import random
     return str(random.randint(100000, 999999))
