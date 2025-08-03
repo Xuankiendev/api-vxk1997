@@ -1,85 +1,79 @@
 from fastapi import APIRouter, Depends, Form, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from fastapi.responses import JSONResponse
 from datetime import datetime
 from . import db, utils
-from .db import User, Verification
+from .db import User
 
 router = APIRouter()
-
-@router.post("/requestVerification")
-async def requestVerification(email: str = Form(...), db: Session = Depends(db.getDb)):
-    existing = db.query(User).filter(User.email == email).first()
-    if existing:
-        return JSONResponse(status_code=400, content={"success": False, "error": "Email already exists"})
-
-    code = utils.generateVerificationCode()
-    expiresAt = utils.oneMinuteLater()
-
-    db.query(Verification).filter(Verification.email == email).delete()
-    db.add(Verification(email=email, code=code, expiresAt=expiresAt))
-    db.commit()
-
-    try:
-        utils.sendVerificationEmail(email, code)
-        return JSONResponse(content={"success": True, "message": "Verification code sent"})
-    except Exception as e:
-        db.rollback()
-        return JSONResponse(status_code=500, content={"success": False, "error": str(e)})
+templates = Jinja2Templates(directory="templates")
 
 @router.post("/signup")
-async def signup(
-    email: str = Form(...),
-    password: str = Form(...),
-    confirmPassword: str = Form(...),
-    code: str = Form(...),
-    db: Session = Depends(db.getDb)
-):
-    if password != confirmPassword:
-        return JSONResponse(status_code=400, content={"success": False, "error": "Passwords do not match"})
+async def signup(email: str = Form(...), password: str = Form(...), db: Session = Depends(db.getDb)):
+    try:
+        existing_user = db.query(User).filter(User.email == email).first()
+        if existing_user:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Email already exists"}
+            )
 
-    verification = db.query(Verification).filter(Verification.email == email).first()
-    if not verification or verification.code != code or verification.expiresAt < datetime.utcnow():
-        return JSONResponse(status_code=400, content={"success": False, "error": "Invalid or expired verification code"})
-
-    existing = db.query(User).filter(User.email == email).first()
-    if existing:
-        return JSONResponse(status_code=400, content={"success": False, "error": "Email already exists"})
-
-    hashedPassword = utils.hashPassword(password)
-    apiKey = utils.generateApiKey()
-
-    user = User(email=email, password=hashedPassword, apiKey=apiKey)
-    db.add(user)
-    db.query(Verification).filter(Verification.email == email).delete()
-    db.commit()
-    db.refresh(user)
-
-    return JSONResponse(content={
-        "success": True,
-        "apiKey": apiKey,
-        "user": {
-            "email": email,
-            "id": user.id,
-            "createdAt": user.createdAt.isoformat()
-        }
-    })
+        hashedPassword = utils.hashPassword(password)
+        apiKey = utils.generateApiKey()
+        
+        new_user = User(
+            email=email,
+            password=hashedPassword,
+            apiKey=apiKey
+        )
+        
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        return JSONResponse(content={
+            "success": True, 
+            "apiKey": apiKey,
+            "user": {
+                "email": email,
+                "id": new_user.id,
+                "createdAt": new_user.created_at.isoformat() if hasattr(new_user, 'created_at') else datetime.now().isoformat()
+            }
+        })
+        
+    except Exception as e:
+        db.rollback()
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
 
 @router.post("/login")
 async def login(email: str = Form(...), password: str = Form(...), db: Session = Depends(db.getDb)):
-    user = db.query(User).filter(User.email == email).first()
-    if not user or not utils.verifyPassword(password, user.password):
-        return JSONResponse(status_code=401, content={"success": False, "error": "Invalid email or password"})
-
-    return JSONResponse(content={
-        "success": True,
-        "apiKey": user.apiKey,
-        "user": {
-            "email": user.email,
-            "id": user.id,
-            "createdAt": user.createdAt.isoformat()
-        }
-    })
+    try:
+        user = db.query(User).filter(User.email == email).first()
+        if not user or not utils.verifyPassword(password, user.password):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "Invalid email or password"}
+            )
+        
+        return JSONResponse(content={
+            "success": True, 
+            "apiKey": user.apiKey,
+            "user": {
+                "email": user.email,
+                "id": user.id,
+                "createdAt": user.created_at.isoformat() if hasattr(user, 'created_at') else datetime.now().isoformat()
+            }
+        })
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
 
 async def validateApiKey(apiKey: str, db: Session = Depends(db.getDb)):
     user = db.query(User).filter(User.apiKey == apiKey).first()
