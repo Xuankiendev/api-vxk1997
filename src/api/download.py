@@ -57,6 +57,22 @@ async def extractAllLinks(url: str) -> Dict[str, Any]:
         'quiet': True,
         'no_warnings': True,
         'extract_flat': False,
+        'no_check_certificate': True,
+        'ignoreerrors': True,
+        'writesubtitles': False,
+        'writeautomaticsub': False,
+        'writethumbnail': False,
+        'writeinfojson': False,
+        'writedescription': False,
+        'writeannotations': False,
+        'skip_download': True,
+        'format_sort': ['res:720', 'ext:mp4:m4a'],
+        'format_sort_force': False,
+        'concurrent_fragment_downloads': 1,
+        'retries': 3,
+        'fragment_retries': 3,
+        'http_chunk_size': 10485760,
+        'extractor_retries': 2,
     }
     
     try:
@@ -88,7 +104,7 @@ async def extractAllLinks(url: str) -> Dict[str, Any]:
 def processSingleEntry(entry: Dict[str, Any]) -> Dict[str, Any]:
     videoLinks = []
     audioLinks = []
-    thumbnailLinks = []
+    bestThumbnail = None
     
     if 'formats' in entry and entry['formats']:
         for fmt in entry['formats']:
@@ -131,19 +147,25 @@ def processSingleEntry(entry: Dict[str, Any]) -> Dict[str, Any]:
                 audioLinks.append(linkData)
     
     if 'thumbnails' in entry and entry['thumbnails']:
+        maxResolution = 0
         for thumb in entry['thumbnails']:
             if thumb.get('url'):
-                thumbnailLinks.append({
-                    "url": thumb['url'],
-                    "width": thumb.get('width'),
-                    "height": thumb.get('height'),
-                    "id": thumb.get('id'),
-                    "type": "thumbnail"
-                })
+                width = thumb.get('width', 0) or 0
+                height = thumb.get('height', 0) or 0
+                resolution = width * height
+                
+                if resolution > maxResolution:
+                    maxResolution = resolution
+                    bestThumbnail = {
+                        "url": thumb['url'],
+                        "width": width,
+                        "height": height,
+                        "id": thumb.get('id'),
+                        "type": "thumbnail"
+                    }
     
     videoLinks.sort(key=lambda x: (x.get('height', 0) or 0), reverse=True)
     audioLinks.sort(key=lambda x: (x.get('abr', 0) or 0), reverse=True)
-    thumbnailLinks.sort(key=lambda x: (x.get('width', 0) or 0) * (x.get('height', 0) or 0), reverse=True)
     
     return {
         "id": entry.get('id'),
@@ -161,14 +183,13 @@ def processSingleEntry(entry: Dict[str, Any]) -> Dict[str, Any]:
         
         "videoLinks": videoLinks,
         "audioLinks": audioLinks,
-        "thumbnailLinks": thumbnailLinks,
+        "thumbnail": bestThumbnail,
         
         "bestVideoLink": videoLinks[0] if videoLinks else None,
         "bestAudioLink": audioLinks[0] if audioLinks else None,
-        "bestThumbnailLink": thumbnailLinks[0] if thumbnailLinks else None,
         
         "totalFormats": len(videoLinks) + len(audioLinks),
         "hasVideo": len(videoLinks) > 0,
         "hasAudio": len(audioLinks) > 0,
-        "hasThumbnails": len(thumbnailLinks) > 0,
+        "hasThumbnail": bestThumbnail is not None,
     }
