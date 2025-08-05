@@ -7,7 +7,5 @@
   },
   "download": {
     "params": ["url", "apiKey"]
-  },
-  "checkhost": {
-    "params": ["url", "method", "apiKey"]
+  }
 }
