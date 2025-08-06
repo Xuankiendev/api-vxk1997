@@ -7,8 +7,5 @@
   },
   "download": {
     "params": ["url", "apiKey"]
-  },
-  "phone_info": {
-    "params": ["phonenumber", "apiKey"]
   }
 }
