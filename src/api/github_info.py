@@ -5,12 +5,12 @@ import requests
 async def run(params: dict, db: Session):
     await validateApiKey(params["apiKey"], db)
 
-    username = params["username"]
-    url = f"https://api.github.com/users/{username}"
+    userName = params["userName"]
+    url = f"https://api.github.com/users/{userName}"
 
     response = requests.get(url)
 
     if response.status_code != 200:
-        return {"error": f"GitHub user '{username}' not found"}
+        return {"error": f"User '{userName}' not found"}
 
     return response.json()
