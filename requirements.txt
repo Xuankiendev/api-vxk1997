@@ -8,3 +8,4 @@ requests
 pytz
 aiohttp
 yt-dlp
+phonenumbers
