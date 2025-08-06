@@ -9,3 +9,7 @@ pytz
 aiohttp
 yt-dlp
 bs4
+dnspython
+python-whois
+ipwhois
+beautifulsoup4
