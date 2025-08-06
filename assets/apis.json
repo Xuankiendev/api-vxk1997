@@ -3,7 +3,7 @@
     "params": ["msg", "apiKey"]
   },
   "github_info": {
-    "params": ["username", "apiKey"]
+    "params": ["userName", "apiKey"]
   },
   "download": {
     "params": ["url", "apiKey"]
