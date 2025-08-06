@@ -8,9 +8,6 @@ async def run(params: dict, db: Session):
     await validateApiKey(params["apiKey"], db)
 
     phone_number = params.get("phonenumber")
-    if not phone_number:
-        return {"error": "Missing phonenumber parameter"}
-
     try:
         parsed = phonenumbers.parse(phone_number)
 
