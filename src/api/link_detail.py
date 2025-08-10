@@ -205,6 +205,7 @@ async def run(params: dict, db: Session):
                 social_media_links.append(link['href'])
         
         return {
+            "screenshot_website": "https://image.thum.io/get/" + response.url,
             "url": response.url,
             "original_url": params["url"],
             "status_code": response.status_code,
