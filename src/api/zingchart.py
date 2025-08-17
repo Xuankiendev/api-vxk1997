@@ -57,9 +57,9 @@ def requestZingMp3(path, params):
 async def run(params: dict, db: Session):
     await validateApiKey(params["apiKey"], db)
     
-    chartId = params.get("chartId", "IWZ9Z08I")
-    week = params.get("week", 0)
-    year = params.get("year", 0)
+    chartId = "IWZ9Z08I"
+    week = 0
+    year = 0
     
     ctime = str(int(time.time()))
     path = "/api/v2/page/get/week-chart"
