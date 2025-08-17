@@ -17,7 +17,7 @@ def getHmac512(string, key):
     return hmac.new(key.encode(), string.encode(), hashlib.sha512).hexdigest()
 
 def getSig(path, params):
-    paramString = ''.join(f"{key}={params[key]}" for key in sorted(params.keys()) if key in ["ctime", "id", "week", "year", "version"])
+    paramString = ''.join(f"{key}={params[key]}" for key in sorted(params.keys()) if key in ["ctime", "id", "week", "year", "version", "apiKey"])
     return getHmac512(path + getHash256(paramString), SECRET_KEY)
 
 def getHeaders():
@@ -75,7 +75,8 @@ async def run(params: dict, db: Session):
             "week": week,
             "year": year,
             "ctime": ctime,
-            "version": VERSION
+            "version": VERSION,
+            "apiKey": API_KEY
         })
     }
     
