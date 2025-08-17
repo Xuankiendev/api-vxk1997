@@ -10,5 +10,14 @@
   },
   "link_detail": {
     "params": ["url", "apiKey"]
+  },
+  "zingmp3_search_music": {
+    "params": ["keyword", "apiKey"]
+  },
+  "zingmp3_download_music": {
+    "params": ["songId", "apiKey"]
+  },
+  "zingchart": {
+    "params": ["apiKey"]
   }
 }
