@@ -7,7 +7,6 @@ jinja2
 requests
 pytz
 aiohttp
-yt-dlp
 bs4
 dnspython
 python-whois
